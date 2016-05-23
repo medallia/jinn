@@ -1,0 +1,7 @@
+.vagrant
+.dockercfg
+jinn.yml
+disk-*.vdi
+ceph
+username
+cached-files
