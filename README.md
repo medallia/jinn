@@ -3,28 +3,60 @@
 ## Description
 
 ## Dependencies
-Vagrant
-vagrant_cashier (optional)
-vagrant_reload
+- Vagrant (with Virtualbox)
+- vagrant_cashier (optional)
+- vagrant_reload
 
 ## Installation
 - install vagrant
+https://www.vagrantup.com/downloads.html
 
 - install plugins
-``` vagrant plugin install vagrant-reload ```
-``` vagrant plugin install vagrant-cachier ```
+``` 
+vagrant plugin install vagrant-reload 
+vagrant plugin install vagrant-cachier 
+```
 
 - add box to vagrant
-```vagrant box add ubuntu/trusty64```
+```
+vagrant box add ubuntu/trusty64
+```
 
 - create configuration
-```cp jinn-small.yml jinn.yml```
+```
+cp jinn-small.yml jinn.yml
+```
 
 - start environment
-```vagrant up```
+```
+vagrant up
+```
 
 
 ## Troubleshooting
+
+You can use the check.sh script, or run the tests manually:
+```
+bash check.sh
+```
+
+- verify the routes to the vagrant machines
+```
+$ route get 10.112.0.0
+   route to: 10.112.0.0
+destination: 10.112.0.0
+       mask: 255.240.0.0
+  interface: vboxnet1
+      flags: <UP,DONE,CLONING>
+ recvpipe  sendpipe  ssthresh  rtt,msec    rttvar  hopcount      mtu     expire
+       0         0         0         0         0         0      1500   -288604
+ ```
+
+- verify zookeeper health. Mode can be either standalone for 1 controller, or leader/follower for 3 controllers.
+```
+vagrant@jinn-r10-u08:/$ echo stat | nc 192.168.255.31 2181 | grep Mode:
+Mode: standalone
+```
 
 - verify mesos election status:
 ```
@@ -51,12 +83,6 @@ vagrant@jinn-r10-u08:/$ sudo ceph -s
             505 MB used, 29881 MB / 30386 MB avail
                  128 active+clean
   client io 163 B/s wr, 0 op/s
-```
-
-- verify zookeeper health. Mode can be either standalone for 1 controller, or leader/follower for 3 controllers.
-```
-vagrant@jinn-r10-u08:/$ echo stat | nc 192.168.255.31 2181 | grep Mode:
-Mode: standalone
 ```
 
 - verify network routes. For one controller, should have something like:

@@ -24,7 +24,7 @@ def get_servers(name, role, fd)
   end
   ru = constraints['unit']
   if !ru.to_i.between?(1, 48)
-    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{name}: unit count(#{ru}) not between 1 and 48"
+    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{name}: unit(#{ru}) not between 1 and 48"
   end
   if ru != nil && (count.to_f / fd.size) > 1
     raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{name}: unit specified with count(#{count}) > nb fault domains(#{fd.size})"

@@ -2,6 +2,16 @@
 # Copyright 2016 Medallia Inc. All rights reserved
 # Use of this source code is governed by the Apache 2.0
 # license that can be found in the LICENSE file.
+pass(){
+	printf $(tput setaf 2)
+	printf "${@}"
+	printf $(tput sgr0)
+}
+fail(){
+	printf $(tput setaf 1)
+	printf "${@}"
+	printf $(tput sgr0)
+}
 function vssh(){
 	local vm=${1##*_}
 	local port=$(VBoxManage showvminfo $1 |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
@@ -18,25 +28,25 @@ USER=$(cat $DIR/username)
 
 echo "Running VMs"
 vms=$(VBoxManage list runningvms | grep -E "jinn_" | awk -F'[\"|\"]' '{print $2}')
-first_vm=""
-while IFS= read -r line; do
-	if [[ -z $first_vm ]]; then
-		first_vm=$line
-	fi
+
+(while IFS= read -r line; do
 	interface=$(VBoxManage showvminfo ${line} --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
 	ip=$(VBoxManage guestproperty get $line /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
 	netmask=$(VBoxManage guestproperty get $line /VirtualBox/GuestInfo/Net/1/V4/Netmask | awk -F":" '{gsub(/ /, "", $2);print $2}')
 	port=$(VBoxManage showvminfo $line |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
-	printf '%s:%s:%s:%s/%s\n' $line $interface $ip $port $netmask
-done <<< "$vms"
+	printf '%s:%s:%s:%s/%s\n' $line $interface $ip $port $netmask 
+done <<< "$vms") | column -s ':' -t
 
+first_vm=$(echo $vms | awk '{print $1}')
+ip=$(VBoxManage guestproperty get $first_vm /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
+interface=$(VBoxManage showvminfo $first_vm --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
 
 printf "\nChecking local route to %s\n" $ip
-gtw=$(sudo route get $ip | grep interface | awk -F':' '{gsub(/ /, "", $2);print $2}')
+gtw=$(route get $ip | grep interface | awk -F':' '{gsub(/ /, "", $2);print $2}')
 if [[ $gtw != $interface ]]; then
-	printf "Wrong route to VMs: %s != %s" $gtw $interface
+	fail "Wrong route to VMs: %s != %s \n" $gtw $interface
 else
-	printf "Found route %s" $gtw
+	pass "Found route %s \n" $gtw
 fi
 
 printf "\n\nChecking OSPF routes (dynamic routes)\n"
@@ -59,12 +69,17 @@ while IFS= read -r line; do
 	if [ "$i4" -lt "30" ] && [ "$i4" -gt "20" ]; then
 		aurora+=($ip)
 	fi
-	printf "%s/%s\n" $ip $suffix
+	printf "\t%s/%s\n" $ip $suffix
 done <<< "$routes"
 
 printf "\n\nChecking Ceph \n"
 (
-	vssh $first_vm 'sudo ceph health' | tee
+	health=$(vssh $first_vm 'sudo ceph health')
+	if [[ $health == "HEALTH_OK" || $health == "HEALTH_WARN" ]]; then
+		pass "%s\n" $health
+	else
+		fail "%s\n" $health
+	fi
 )
 printf "\nChecking Monitors\n"
 (
@@ -83,9 +98,9 @@ printf "\nChecking Zookeeper \n"
 		printf "%s: %s\n" $ip ${mode}
 	done 
 	if [ "$count" -lt "1" ]; then
-		echo "No leader elected"
+		fail "No leader elected\n"
 	else
-		echo "leader elected"
+		pass "leader elected\n"
 	fi
 )
 
@@ -96,11 +111,11 @@ printf "\nChecking Mesos \n"
 		mode=$(curl -s http://$ip:5050/metrics/snapshot | grep -oh "elected\"\:1.0")
 		mode=${mode##*:}
 		if [ "${mode%.*}" -gt "0" ]; then
-			status=OK
+			pass "%s: %s\n" $ip OK
 		else
-			status=NOK
+			fail "%s: %s\n" $ip NOK
 		fi
-		printf "%s: %s\n" $ip ${status}
+		
 	done 
 )
 
@@ -109,11 +124,11 @@ printf "\nChecking Aurora \n"
 	for ip in "${aurora[@]}"; do 
 		mode=$(curl -s http://$ip:8081/vars | grep framework_registered)
 		if [ "${mode#* }" -gt "0" ]; then
-			status=OK
+			pass "%s: %s\n" $ip OK
 		else
-			status=NOK
+			pass "%s: %s\n" $ip NOK
 		fi
-		printf "%s: %s\n" $ip ${status}
+		
 	done 
 )
 printf "\n"
