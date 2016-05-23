@@ -1,0 +1,65 @@
+---
+# DC defines the structure of the simulated datacenter
+#    subnet: this is the subnet for DC which will be subdivided into a subnet per fault domain
+#    fault_domains: This could be an Amazon  AZ or a rack. Each fault domain has an id and a subnet which must be included in the DC subnet.
+DC:
+    subnet: 10.112.0.0/12
+    name: jinn
+    fault_domains:
+        - id: 'rack10'
+          subnet: 10.112.10.0/24
+        - id: 'rack11'
+          subnet: 10.112.11.0/24
+        - id: 'rack12'
+          subnet: 10.112.12.0/24
+# OS hold the definition of the box used by all the instances
+# images: name of the image (required)
+# image_url: url to dowmload the image (optional)
+# ssh_port: allows the use of images configured with ssh at, e.g. port 2222
+# storagectl: allows the specification of the disk controller for this specific OS (check the virtualbox setting to find the name)
+OS:
+    username: 'vagrant'
+    password: 'vagrant'
+    ssh_port: 22
+    storagectl: 'SATAController'
+    image: "ubuntu/trusty64"
+# roles with definition for each VM create
+# supported constraints : 
+#    - limit: defines how many instance of the role can be provisioned per fault domain
+#             if not specified, the instances may end up in a single fault domain
+#    - unit: defines the position in the rack - drives the IP calculation of the last octet using (unit*4)+2
+#            value is between 1 and 48
+#            if not specified, the IP will be allocated randomly in the range specified by the subnet
+#    - fd: defines a specific fault domain to provision instances (must be compatible with limit)
+#          value is the id of a fault domain in the DC.
+#          if not specified, the first available/compatible fault domain will be used.
+#    - count: number of servers to create for this role
+#             required to specify the number of instance per role.
+# Disk resources : local drives or EBS (future)
+roles:
+    ssh:
+        resources:
+            memory: 512
+            cpu: 1
+        roles: ['REGISTRY']
+        constraints: {'count': 1, 'limit': 1, 'unit': '10'}
+    ceph:
+        resources:
+            memory: 512
+            cpu: 1 
+            disks_type: 'local'
+            disks: {'1': 10, '2': 10, '3': 10}
+        roles: ['OSD', 'MON']
+        constraints: {'count': 1, 'limit': 1, 'unit': '23'}
+    controller:
+        resources:
+            memory: 2256 
+            cpu: 2
+        roles: ['ZK', 'MESOS-MASTER', 'MESOS-SLAVE', 'AURORA']
+        constraints: {'count': 1, 'limit': 1, 'unit': '8'}
+    node:
+        resources:
+            memory: 2256
+            cpu: 4
+        roles: ['MESOS-SLAVE']
+        constraints: {'count': 2, 'limit': 1, 'unit': '1'}
