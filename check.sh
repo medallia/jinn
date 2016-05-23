@@ -13,6 +13,7 @@ fail(){
 	printf $(tput sgr0)
 }
 function vssh(){
+	# inspired from https://github.com/filex/vagrant-ssh
 	local vm=${1##*_}
 	local port=$(VBoxManage showvminfo $1 |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
 	shift 1
@@ -24,9 +25,9 @@ function vssh(){
 }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-USER=$(cat $DIR/username)
+USER="$(cat $DIR/username)"
 
-echo "Running VMs"
+printf "Running VMs\n"
 vms=$(VBoxManage list runningvms | grep -E "jinn_" | awk -F'[\"|\"]' '{print $2}')
 
 (while IFS= read -r line; do
@@ -42,6 +43,7 @@ ip=$(VBoxManage guestproperty get $first_vm /VirtualBox/GuestInfo/Net/1/V4/IP | 
 interface=$(VBoxManage showvminfo $first_vm --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
 
 printf "\nChecking local route to %s\n" $ip
+
 gtw=$(route get $ip | grep interface | awk -F':' '{gsub(/ /, "", $2);print $2}')
 if [[ $gtw != $interface ]]; then
 	fail "Wrong route to VMs: %s != %s \n" $gtw $interface
