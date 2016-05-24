@@ -23,14 +23,14 @@ GROUP="ceph"
 mkdir -p /vagrant/ceph
 
 if [ ! -e /vagrant/ceph/$CLUSTER.mon.keyring ]; then
-	ceph-authtool --create-keyring /vagrant/ceph/$CLUSTER.mon.keyring --gen-key -n mon. --cap mon 'allow *'
+  ceph-authtool --create-keyring /vagrant/ceph/$CLUSTER.mon.keyring --gen-key -n mon. --cap mon 'allow *'
 
-	ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/$CLUSTER.client.admin.keyring
-	ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring
-	ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/bootstrap-mds.$CLUSTER.keyring
-	ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring
+  ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/$CLUSTER.client.admin.keyring
+  ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring
+  ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/bootstrap-mds.$CLUSTER.keyring
+  ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring
 
-	chmod 0755 /vagrant/ceph/$CLUSTER.mon.keyring
+  chmod 0755 /vagrant/ceph/$CLUSTER.mon.keyring
 fi
 
 
@@ -43,8 +43,8 @@ temp="$(mktemp /tmp/$CLUSTER.XXXX)"
 counter=1
 array=()
 for i in "${CEPHNODES[@]}"; do 
-	array+=("--add $(get_property HOSTNAME $i) $i:6789")
-	(( counter++ ))
+  array+=("--add $(get_property HOSTNAME $i) $i:6789")
+  (( counter++ ))
 done
 
 monmaptool --create $( echo "${array[*]}" ) --fsid $FSID --clobber $temp
