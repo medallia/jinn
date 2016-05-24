@@ -20,36 +20,36 @@ apt-get -y install ceph
 mkdir -p /vagrant/ceph
 
 if [ ! -e /vagrant/ceph/$CLUSTER.client.admin.keyring ]; then
-	ceph-authtool --create-keyring /vagrant/ceph/ceph.client.admin.keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
+  ceph-authtool --create-keyring /vagrant/ceph/ceph.client.admin.keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
 fi
 
 if [ ! -e /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring ]; then
-	ceph-authtool /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-osd --cap mon 'allow profile bootstrap-osd'
+  ceph-authtool /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-osd --cap mon 'allow profile bootstrap-osd'
 fi
 
 if [ ! -e /vagrant/ceph/bootstrap-mds.$CLUSTER.keyring ]; then
-	ceph-authtool /vagrant/ceph/bootstrap-mds.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-mds --cap mon 'allow profile bootstrap-mds'
+  ceph-authtool /vagrant/ceph/bootstrap-mds.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-mds --cap mon 'allow profile bootstrap-mds'
 fi
 
 if [ ! -e /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring ]; then
-	ceph-authtool /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-rgw --cap mon 'allow profile bootstrap-rgw'
+  ceph-authtool /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-rgw --cap mon 'allow profile bootstrap-rgw'
 fi
 
 NBMONS=$(get_property NBMONS)
 
 cat > /etc/ceph/ceph.conf <<- END
-	[global]
-	fsid = $FSID
-	mon_host = $(IFS=, ; echo "${CEPHNODES[*]}")
-	auth_cluster_required = cephx
-	auth_service_required = cephx
-	auth_client_required = cephx
-	filestore_xattr_use_omap = true
-	osd crush chooseleaf type = 0
-	osd journal size = 100
-	osd pool default pg num = $PGNUM
-	osd pool default pgp num = $PGNUM
-	osd pool default size = $NBMONS
+  [global]
+  fsid = $FSID
+  mon_host = $(IFS=, ; echo "${CEPHNODES[*]}")
+  auth_cluster_required = cephx
+  auth_service_required = cephx
+  auth_client_required = cephx
+  filestore_xattr_use_omap = true
+  osd crush chooseleaf type = 0
+  osd journal size = 100
+  osd pool default pg num = $PGNUM
+  osd pool default pgp num = $PGNUM
+  osd pool default size = $NBMONS
 END
 
 # Wrapper for Ceph RBD that prevents mapping an image already watched
@@ -62,10 +62,10 @@ END
 
 
 if [ -e /vagrant/$CLUSTER/$CLUSTER.client.admin.keyring ]; then
-	cp /vagrant/$CLUSTER/$CLUSTER.client.admin.keyring /etc/ceph/
-	chown $USER:$GROUP /etc/ceph/$CLUSTER.client.admin.keyring
-	chmod 0640 /etc/ceph/$CLUSTER.client.admin.keyring
+  cp /vagrant/$CLUSTER/$CLUSTER.client.admin.keyring /etc/ceph/
+  chown $USER:$GROUP /etc/ceph/$CLUSTER.client.admin.keyring
+  chmod 0640 /etc/ceph/$CLUSTER.client.admin.keyring
 else
-	echo "CEPH not initialized. Cannot find admin keyring"
+  echo "CEPH not initialized. Cannot find admin keyring"
     exit 1
-fi	
+fi  

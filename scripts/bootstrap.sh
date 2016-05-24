@@ -8,16 +8,16 @@ set -x
 export DEBIAN_FRONTEND=noninteractive
 
 if [[ -z "$NET_IP" || \
-	  -z "$NET_MASK" || \
-	  -z "$CONTROLLERS" || \
-	  -z "$SLAVES"  || \
-	  -z "$MONITORS"  || \
-	  -z "$ROLES" || \
-	  -z "$CIDR" || \
-	  -z "$QUORUM" ]]; then
-	echo "Missing Parameter(s)"
-	env
-	exit 1
+    -z "$NET_MASK" || \
+    -z "$CONTROLLERS" || \
+    -z "$SLAVES"  || \
+    -z "$MONITORS"  || \
+    -z "$ROLES" || \
+    -z "$CIDR" || \
+    -z "$QUORUM" ]]; then
+  echo "Missing Parameter(s)"
+  env
+  exit 1
 fi
 
 # Hosts computation
@@ -50,7 +50,7 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 END
     echo "$1" >/etc/hostname
-	hostname "$1"
+  hostname "$1"
 }
 
 
@@ -60,10 +60,10 @@ set_hostname $HOSTNAME $NET_IP
 #create ZK hosts
 array=()
 for i in "${CTRLNODES[@]}"; do 
-	n=$(get_property HOSTNAME $i)
-	sed -i "/$n/d" /etc/hosts
-	echo "$i $n" >> /etc/hosts
-	array+=("$(get_property ZK_IP $i):2181")
+  n=$(get_property HOSTNAME $i)
+  sed -i "/$n/d" /etc/hosts
+  echo "$i $n" >> /etc/hosts
+  array+=("$(get_property ZK_IP $i):2181")
 done
 
 ZK_HOSTS=$( IFS=, ; echo "${array[*]}" )
@@ -71,15 +71,15 @@ ZK_HOSTS=$( IFS=, ; echo "${array[*]}" )
 
 #create CEPH node hostnames
 for i in "${CEPHNODES[@]}"; do 
-	n=$(get_property HOSTNAME $i)
-	sed -i "/$n/d" /etc/hosts
-	echo "$i $n" >> /etc/hosts
+  n=$(get_property HOSTNAME $i)
+  sed -i "/$n/d" /etc/hosts
+  echo "$i $n" >> /etc/hosts
 done
 
 #create SLAVES node hostnames
 for i in "${SLNODES[@]}"
 do
-	n=$(get_property HOSTNAME $i)
+  n=$(get_property HOSTNAME $i)
     sed -i "/$n/d" /etc/hosts
     echo "$i $n" >> /etc/hosts
 done
@@ -108,18 +108,18 @@ exit 0
 EOF
 
 function set_pgnum(){
-	local _PGNUM=$1
-	
-	until timeout 5 ceph osd pool set rbd pg_num ${_PGNUM} || [ $? -ne 16 ]
-	do
-	    echo "sleeping"
-	    sleep 1
-	done
-	until timeout 5 ceph osd pool set rbd pgp_num ${_PGNUM} || [ $? -ne 16 ]
-	do
-	    echo "sleeping"
-	    sleep 1
-	done
+  local _PGNUM=$1
+  
+  until timeout 5 ceph osd pool set rbd pg_num ${_PGNUM} || [ $? -ne 16 ]
+  do
+      echo "sleeping"
+      sleep 1
+  done
+  until timeout 5 ceph osd pool set rbd pgp_num ${_PGNUM} || [ $? -ne 16 ]
+  do
+      echo "sleeping"
+      sleep 1
+  done
 }
 
 #for jdk8
@@ -159,32 +159,32 @@ PGNUM=$(get_property PGNUM)
 . /vagrant/scripts/ceph-client.sh
 
 if has "REGISTRY" "${SRVROLES[@]}"; then
-	. /vagrant/scripts/registry.sh
+  . /vagrant/scripts/registry.sh
 fi
 
 if has "MON" "${SRVROLES[@]}"; then
-	. /vagrant/scripts/ceph-mon.sh
+  . /vagrant/scripts/ceph-mon.sh
 fi
 
 if has "OSD" "${SRVROLES[@]}"; then
-	. /vagrant/scripts/ceph-osd.sh
+  . /vagrant/scripts/ceph-osd.sh
 
-	set_pgnum ${PGNUM} || true
+  set_pgnum ${PGNUM} || true
 
 fi
 
 if has "MESOS-SLAVE" "${SRVROLES[@]}"; then
-	. /vagrant/scripts/mesos-slave.sh
+  . /vagrant/scripts/mesos-slave.sh
 fi
 
 if has "ZK" "${SRVROLES[@]}"; then
-	. /vagrant/scripts/zookeeper.sh
+  . /vagrant/scripts/zookeeper.sh
 fi
 
 if has "MESOS-MASTER" "${SRVROLES[@]}"; then
-	. /vagrant/scripts/mesos-master.sh
+  . /vagrant/scripts/mesos-master.sh
 fi
 
 if has "AURORA" "${SRVROLES[@]}"; then
-	. /vagrant/scripts/aurora.sh
+  . /vagrant/scripts/aurora.sh
 fi
