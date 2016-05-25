@@ -7,7 +7,7 @@ set -e
 set -x
 export DEBIAN_FRONTEND=noninteractive
 
-RELEASE=jewel
+RELEASE=infernalis
 
 if [[ -z "$CLUSTER" || -z "$HOSTNAME" || -z "$FSID" || -z "$PGNUM" ]]; then
   echo "Missing Parameter(s)"

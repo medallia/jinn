@@ -20,12 +20,8 @@ service docker stop || true
 
 
 FILE="docker-1.9.1-medallia-2-linux-amd64"
-if [[ ! -e /vagrant/cached-files/${FILE} ]]; then
-  mkdir -p /vagrant/cached-files
-  DOCKER_URL="https://github.com/medallia/docker/releases/download/v1.9.1-medallia-2/$FILE"
-  wget --quiet $DOCKER_URL -O /vagrant/cached-files/${FILE}
-fi
-sudo cp /vagrant/cached-files/${FILE} /usr/bin/docker && sudo chmod +x /usr/bin/docker
+_F=$(get_file $FILE "https://github.com/medallia/docker/releases/download/v1.9.1-medallia-2")
+sudo cp ${_F} /usr/bin/docker && sudo chmod +x /usr/bin/docker
 
 # Docker init-script has changed upstream, we expect -d, init script uses daemon
 sed -i -e 's/exec \"$DOCKER\" daemon/exec \"$DOCKER\" -d/' /etc/init/docker.conf

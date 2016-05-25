@@ -12,9 +12,9 @@ if [[ -z "$NET_IP" || -z "$CIDR" ]]; then
 fi
 
 # Upgrade quagga
-
-wget --quiet http://archive.ubuntu.com/ubuntu/pool/main/q/quagga/quagga_0.99.24.1-2ubuntu1_amd64.deb
-dpkg -i quagga_0.99.24.1-2ubuntu1_amd64.deb
+_QF="quagga_0.99.24.1-2ubuntu1_amd64.deb"
+_F=$(get_file $_QF "http://archive.ubuntu.com/ubuntu/pool/main/q/quagga")
+dpkg -i "${_F}"
 
 # Install quagga
 # Mode is broadcast and not point to point
