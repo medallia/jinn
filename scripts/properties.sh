@@ -3,6 +3,8 @@
 # Use of this source code is governed by the Apache 2.0
 # license that can be found in the LICENSE file.
 
+set -ex
+
 # get_property returns a computed parameter
 # example :
 # MESOS_NODE_ID=$(get_property MESOS_NODE_ID)
@@ -25,6 +27,7 @@ function get_property()
   local _RACK="" 
   local _UNIT=""
   local _ZK_IP=""
+  local _ZK_HOSTS=""
   local _MESOS_MASTER_IP=""
   local _AURORA_SCHEDULER_IP=""
   local _MESOS_DEDICATED=""
@@ -47,12 +50,9 @@ function get_property()
   fi
 
 
-  if [[ -z "${NET_IP}" ||  -z "${NET_MASK}"  ||  -z "${DC_NAME}" ]]; then
-    return 1
-  fi
-
-  if [ -z "${NET_MASK}" ]; then
-    return 1
+  if [[ -z "${NET_IP}" ||  -z "${NET_MASK}"  ||  -z "${DC_NAME}" || -z "${CTRLNODES}" || -z ${NET_MASK} ]]; then
+    echo "Missing Parameter(s)"
+    exit 1
   fi
 
   # Calculate Network value based on a netmask and IP
@@ -71,12 +71,17 @@ function get_property()
 
   # calculate  controller id
   counter=1
+  array=()
   for ip in "${CTRLNODES[@]}"; do 
     if [ "$ip" = "$NET_IP" ]; then
       _CONTROLLER_ID=$counter
     fi
+    zk_ip="192.168.255.$(($counter + 30))"
+    array+=("$zk_ip:2181")
     (( counter ++ ))
   done
+
+  _ZK_HOSTS=$( IFS=, ; echo "${array[*]}" )
 
   if [[ -n "${_CONTROLLER_ID}" ]]; then
     _ZK_IP="192.168.255.$((_CONTROLLER_ID + 30))"

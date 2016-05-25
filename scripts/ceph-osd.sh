@@ -51,7 +51,6 @@ if [[ -z "$RACK" || -z "$HOSTNAME" ]]; then
 fi
 
 
-
 if ! grep -P '^\s*osd\s+crush\s+location\s*=' /etc/ceph/ceph.conf >/dev/null; then
     sed -i -e "/^\[global\]/a osd crush location = host=$HOSTNAME rack=$RACK root=default" /etc/ceph/ceph.conf
 fi

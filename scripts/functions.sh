@@ -7,13 +7,37 @@ set -e
 set -x
 
 
-has () {
+function add-repo() {
+  local NAME="$1"
+  local URL="$2"
+  local DISTRO="$3"
+  local COMPONENT="$4"
+  local KEY="${5:-}"
+  [[ -n "${KEY}" ]] && wget -q -O - "${KEY}" | apt-key add -
+  echo >/etc/apt/sources.list.d/${NAME}.list "deb ${URL} ${DISTRO} ${COMPONENT}"
+  apt-get update -o Dir::Etc::sourcelist="sources.list.d/${NAME}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+}
+
+
+function has() {
   # thanks to http://stackoverflow.com/a/8574392
   local e
   for e in "${@:2}"; do [ "$e" == "$1" ] && return 0; done
   return 1
 }
 
+function jinn-source() {
+  local _SCRIPT="$1"
+  local _PATH=${SCRIPT_PATH}
+  shift
+  source <(cat "${_PATH}/${_SCRIPT}") "$@"
+}
+
+# Source file and execute in subshell; this makes variables set in sourced files private to that scope
+function call() {
+  echo ">>> Calling ${1}"
+  ( jinn-source "$@" )
+}
 
 function create_image(){
   local _IMG=$1
