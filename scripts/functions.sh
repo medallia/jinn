@@ -18,6 +18,20 @@ function add-repo() {
   apt-get update -o Dir::Etc::sourcelist="sources.list.d/${NAME}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 }
 
+function get_file() {
+  local _FILE="${1}"
+  local _P="${2}"
+  local _CACHE="/vagrant/cached-files"
+  local _URL=""
+
+  if [[ ! -e ${_CACHE}/${_FILE} ]]; then
+    mkdir -p ${_CACHE}
+    _URL="${_P}/$_FILE"
+    wget --quiet $_URL -O ${_CACHE}/${_FILE}
+  fi
+  echo "${_CACHE}/${_FILE}"
+}
+
 
 function has() {
   # thanks to http://stackoverflow.com/a/8574392
