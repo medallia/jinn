@@ -13,9 +13,11 @@ if [[ -z "$CONTROLLER_ID" || -z "$ZK_IP" || -z "$ZK_HOSTS" ]]; then
   exit 1
 fi
 
-create_image mesos-zookeeper-${CONTROLLER_ID}
-unmount_image mesos-zookeeper-${CONTROLLER_ID}
-
+# TODO: Tune the size of the image created
+ZK_PATH=$(create_image mesos-zookeeper-${CONTROLLER_ID})
+if [[ -n "$ZK_PATH" ]]; then
+    unmount_image mesos-zookeeper-${CONTROLLER_ID}
+fi
 
 init_docker_conf "/etc/init/zookeeper-docker.conf" \
     "Zookeeper For Mesos Cluster" \

@@ -6,6 +6,7 @@
 set -e
 set -x
 
+# local cache
 mkdir -p /vagrant/registry-data
 
 init_docker_conf "/etc/init/registry.conf" \

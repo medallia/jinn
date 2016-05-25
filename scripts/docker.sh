@@ -11,18 +11,18 @@ if [[ -z "$NET_IP" || -z "$CIDR" || -z "$USER" ]]; then
   exit 1
 fi
 
-# if the kernel does not have overlayfs - install H/W enablement version - NEED REBOOT to take effect
-if [[ -z "$(grep overlay /proc/filesystems)" ]]; then
-  apt-get install -y linux-generic-lts-wily linux-headers-generic-lts-wily
-fi
+apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+add-repo docker https://apt.dockerproject.org/repo ubuntu-trusty main
 
 apt-get -y install docker-engine=1.9.1-0~trusty
 
 service docker stop || true
+
+
 FILE="docker-1.9.1-medallia-2-linux-amd64"
 if [[ ! -e /vagrant/cached-files/${FILE} ]]; then
   mkdir -p /vagrant/cached-files
-  DOCKER_URL="https://github.com/medallia/docker/releases/download/v1.9.1-medallia-2/docker-1.9.1-medallia-2-linux-amd64"
+  DOCKER_URL="https://github.com/medallia/docker/releases/download/v1.9.1-medallia-2/$FILE"
   wget --quiet $DOCKER_URL -O /vagrant/cached-files/${FILE}
 fi
 sudo cp /vagrant/cached-files/${FILE} /usr/bin/docker && sudo chmod +x /usr/bin/docker

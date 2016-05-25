@@ -7,12 +7,16 @@ set -e
 set -x
 export DEBIAN_FRONTEND=noninteractive
 
+RELEASE=jewel
+
 if [[ -z "$CLUSTER" || -z "$HOSTNAME" || -z "$FSID" || -z "$PGNUM" ]]; then
   echo "Missing Parameter(s)"
   exit 1
 fi
 
-echo "Installing Ceph ..."
+
+# Ceph Repo
+add-repo ceph http://download.ceph.com/debian-${RELEASE}/ $(lsb_release -sc) main 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc'
 
 # Ceph Package Install
 apt-get -y install ceph
@@ -67,5 +71,5 @@ if [ -e /vagrant/$CLUSTER/$CLUSTER.client.admin.keyring ]; then
   chmod 0640 /etc/ceph/$CLUSTER.client.admin.keyring
 else
   echo "CEPH not initialized. Cannot find admin keyring"
-    exit 1
+  exit 1
 fi  

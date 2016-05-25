@@ -9,31 +9,21 @@ set -x
 
 AURORA_SCHEDULER_IP=$(get_property AURORA_SCHEDULER_IP)
 
-#Aurora needs mesos to initialiize the log
-apt-get -y install mesos=0.28.0-2.0.16.ubuntu1404
-
-echo manual >/etc/init/mesos-slave.override
-echo manual >/etc/init/mesos-master.override
-echo manual >/etc/init/zookeeper.override
-
 if [[ -z "$CONTROLLER_ID" || -z "$AURORA_SCHEDULER_IP" || -z "$ZK_HOSTS" || -z "$QUORUM" || -z "$DC_NAME" ]]; then
   echo "Missing Parameter(s)"
   exit 1
 fi
 
+# TODO: Tune the size of the image created
 AURORA_PATH=$(create_image aurora-${CONTROLLER_ID})
 if [[ -n "$AURORA_PATH" ]]; then
-  mkdir -p $AURORA_PATH/scheduler/db
-  chmod -R a+rwx $AURORA_PATH
-
-  mesos-log initialize --path="${AURORA_PATH}/scheduler/db"
   unmount_image aurora-${CONTROLLER_ID}
 fi
 
 init_docker_conf "/etc/init/aurora-scheduler.conf" \
   "Aurora Scheduler" \
   "docker.m8s.io/medallia/aurora-scheduler" \
-  "0.11.0-medallia" \
+  "0.12.0-medallia-2" \
   "aurora_scheduler" \
   "routed" \
   "$AURORA_SCHEDULER_IP/32" \

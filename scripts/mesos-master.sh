@@ -13,11 +13,9 @@ if [[ -z "$ZK_HOSTS" || -z "$CONTROLLER_ID" || -z "$DC_NAME" || -z "$QUORUM" || 
   exit 1
 fi
 
+# TODO: Tune the size of the image created
 MESOS_PATH=$(create_image mesos-master-${CONTROLLER_ID})
 if [[ -n "$MESOS_PATH" ]]; then
-  mkdir -p $MESOS_PATH/workdir
-  mkdir -p $MESOS_PATH/logs
-  chmod -R 700 $MESOS_PATH
   unmount_image mesos-master-${CONTROLLER_ID}
 fi
 
