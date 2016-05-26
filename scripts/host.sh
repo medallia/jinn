@@ -23,7 +23,7 @@ END
   hostname "$1"
 }
 
-set_hosts() {
+function set_hosts() {
   declare -a _array=("${!1}")
 
   for i in "${_array[@]}"; do
@@ -42,15 +42,15 @@ set_hostname $HOSTNAME $NET_IP
 
 #create ZK hosts
 echo ">>> Add Controllers to /etc/hosts"
-set_hosts $CTRLNODES
+set_hosts CTRLNODES[@]
 
 #create CEPH node hostnames
 echo ">>> Add CEPH nodes to /etc/hosts"
-set_hosts $CEPHNODES
+set_hosts CEPHNODES[@]
 
 #create SLAVES node hostnames
 echo ">>> Add Compute nodes to /etc/hosts"
-set_hosts $SLNODES
+set_hosts SLNODES[@]
 
 
 cat <<'EOF' > /etc/rc.local
