@@ -14,7 +14,6 @@ init_docker_conf "/etc/init/registry.conf" \
 "registry" \
 "2.4.0" \
 "registry" \
-"routed" \
 "10.112.255.254/32" \
 "" \
 "-v /vagrant/registry-data:/var/lib/registry"

@@ -23,10 +23,9 @@ echo "DISK: $disk"
 
 MESOS_DEDICATED=$(get_property MESOS_DEDICATED)
 
+attributes="host:${HOSTNAME};rack:${RACK};unit:${UNIT}"
 if [[ -n ${MESOS_DEDICATED} ]]; then
-	attributes="host:${HOSTNAME};rack:${RACK};unit:${UNIT};dedicated:${MESOS_DEDICATED}"
-else
-	attributes="host:${HOSTNAME};rack:${RACK};unit:${UNIT}"
+	attributes="${attributes};dedicated:${MESOS_DEDICATED}"
 fi
 
 init_docker_conf "/etc/init/mesos-slave-docker.conf" \
@@ -34,7 +33,6 @@ init_docker_conf "/etc/init/mesos-slave-docker.conf" \
   "mesosphere/mesos-slave" \
   "0.28.0-2.0.16.ubuntu1404" \
   "mesos_slave" \
-  "host" \
   "" \
   "" \
   "--privileged" \
@@ -54,4 +52,4 @@ init_docker_conf "/etc/init/mesos-slave-docker.conf" \
   "-v /cgroup:/cgroup" \
   "-v /sys:/sys" \
   "-v /usr/bin/docker:/usr/bin/docker" \
-  "-v /root/.dockercfg:/root/.dockercfg" \
+  "-v /root/.dockercfg:/root/.dockercfg"

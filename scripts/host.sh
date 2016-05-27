@@ -7,7 +7,7 @@ set -e
 set -x
 
 
-set_hostname() {
+function set_hostname() {
   local hostname=$1
   local my_ip=$2
   cat >/etc/hosts <<END

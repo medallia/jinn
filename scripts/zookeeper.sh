@@ -24,7 +24,6 @@ init_docker_conf "/etc/init/zookeeper-docker.conf" \
     "docker.m8s.io/medallia/docker-zookeeper" \
     "v2.0.1-zk-3.4.8" \
     "zookeeper" \
-    "routed" \
     "$ZK_IP/32" \
     "" \
     "-v mesos-zookeeper-$CONTROLLER_ID:/opt/zookeeper:rw,ceph" \
