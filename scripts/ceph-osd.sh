@@ -6,6 +6,22 @@
 set -e
 set -x
 
+function set_pgnum(){
+  local _PGNUM=$1
+  
+  until timeout 5 ceph osd pool set rbd pg_num ${_PGNUM} || [ $? -ne 16 ]
+  do
+      echo "sleeping"
+      sleep 1
+  done
+  until timeout 5 ceph osd pool set rbd pgp_num ${_PGNUM} || [ $? -ne 16 ]
+  do
+      echo "sleeping"
+      sleep 1
+  done
+}
+
+
 function clean_drive () {
     devnode="${1}"
 
