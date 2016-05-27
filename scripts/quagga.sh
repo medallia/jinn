@@ -6,7 +6,7 @@
 set -e
 set -x
 
-if [[ -z "$NET_IP" || -z "$CIDR" ]]; then
+if [[ -z "$NET_IP" || -z "$CIDR" || -z "$INTERFACE" ]]; then
   echo "Missing Parameter(s)"
   exit 1
 fi
@@ -36,14 +36,14 @@ router ospf
  ospf router-id ${NET_IP}
  redistribute kernel
  passive-interface default
- no passive-interface eth1
+ no passive-interface ${INTERFACE}
  network ${CIDR} area 0.0.0.0
  network 192.168.0.0/16 area 0.0.0.0
  network 10.255.255.0/24 area 0.0.0.0
 !
 log syslog
 !
-interface eth1
+interface ${INTERFACE}
 !
 EOF
 
