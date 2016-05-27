@@ -16,8 +16,6 @@ USER="ceph"
 GROUP="ceph"
 
 
-
-
 # Initialize CEPH config
 
 mkdir -p /vagrant/ceph

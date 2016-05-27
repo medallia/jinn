@@ -37,29 +37,15 @@ IFS=' ' read -a SRVROLES <<< "${ROLES}"
 HOSTNAME=$(get_property HOSTNAME)
 RACK=$(get_property RACK)
 UNIT=$(get_property UNIT)
+
 ZK_HOSTS=$(get_property ZK_HOSTS)
+
 INTERFACE="eth1"
-
-function set_pgnum(){
-  local _PGNUM=$1
-  
-  until timeout 5 ceph osd pool set rbd pg_num ${_PGNUM} || [ $? -ne 16 ]
-  do
-      echo "sleeping"
-      sleep 1
-  done
-  until timeout 5 ceph osd pool set rbd pgp_num ${_PGNUM} || [ $? -ne 16 ]
-  do
-      echo "sleeping"
-      sleep 1
-  done
-}
-
-
 
 CONTROLLER_ID=$(get_property CONTROLLER_ID)
 CEPH_MON_ID=$(get_property CEPH_MON_ID)
 CLUSTER=$(get_property CLUSTER)
+
 PGNUM=$(get_property PGNUM)
 
 echo ">>> Updating APT sources"

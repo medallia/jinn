@@ -28,7 +28,7 @@ function copy_file(){
 function wget_file() {
   local _FILE="${1}"
   local _P="${2}"
-  local _CACHE="/vagrant/cached-files"
+  local _CACHE="/var/tmp/bootstrap"
   local _URL=""
 
   if [[ ! -e ${_CACHE}/${_FILE} ]]; then

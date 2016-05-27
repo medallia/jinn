@@ -86,9 +86,10 @@ end
 unless Vagrant.has_plugin?("vagrant-reload")
   raise 'vagrant-reload is not installed!'
 end
-
-jinn = YAML.load_file('jinn.yml')
-
+vagrant_root = File.dirname(__FILE__)
+jinn = YAML.load_file(File.join(vagrant_root,'jinn.yml'))
+cache_dir = File.join(vagrant_root, 'cached-files')
+system("mkdir -p #{cache_dir}")
 # maybe there is a way to get Vagrant's environment ?
 venv = Vagrant::Environment.new(:ui_class => Vagrant::UI::Colored)
 
@@ -159,6 +160,7 @@ Vagrant.configure(2) do |cluster|
       index = (servers.index(server)+1).to_s
       cluster.vm.define name+index do |box|
         box.vm.network "private_network", ip: server, netmask:netmask, nic_type: NICTYPE
+        box.vm.synced_folder "cached-files", "/var/tmp/bootstrap"
         box.vm.provider :virtualbox do |vb|
           vb.memory = resources['memory']
           vb.cpus = resources['cpu']
