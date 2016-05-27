@@ -38,6 +38,7 @@ HOSTNAME=$(get_property HOSTNAME)
 RACK=$(get_property RACK)
 UNIT=$(get_property UNIT)
 ZK_HOSTS=$(get_property ZK_HOSTS)
+INTERFACE="eth1"
 
 function set_pgnum(){
   local _PGNUM=$1
