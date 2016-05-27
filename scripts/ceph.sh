@@ -48,6 +48,7 @@ cat > /etc/ceph/ceph.conf <<- END
   auth_cluster_required = cephx
   auth_service_required = cephx
   auth_client_required = cephx
+  rbd default features = 1
   filestore_xattr_use_omap = true
   osd crush chooseleaf type = 0
   osd journal size = 100

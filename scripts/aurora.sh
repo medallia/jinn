@@ -25,7 +25,6 @@ init_docker_conf "/etc/init/aurora-scheduler.conf" \
   "medallia/aurora-scheduler" \
   "0.12.0-medallia-2" \
   "aurora_scheduler" \
-  "routed" \
   "$AURORA_SCHEDULER_IP/32" \
   "-cluster_name=${DC_NAME} \
    -native_log_quorum_size=${QUORUM} \

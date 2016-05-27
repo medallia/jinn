@@ -18,9 +18,13 @@ apt-get -y install docker-engine=1.9.1-0~trusty
 
 service docker stop || true
 
+for f in docker.override docker-iptables.conf; do
+  copy_file "/docker/$f" "/etc/init/$f"
+done
+
 
 FILE="docker-1.9.1-medallia-2-linux-amd64"
-_F=$(get_file $FILE "https://github.com/medallia/docker/releases/download/v1.9.1-medallia-2")
+_F=$(wget_file $FILE "https://github.com/medallia/docker/releases/download/v1.9.1-medallia-2")
 sudo cp ${_F} /usr/bin/docker && sudo chmod +x /usr/bin/docker
 
 # Docker init-script has changed upstream, we expect -d, init script uses daemon

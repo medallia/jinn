@@ -24,7 +24,6 @@ init_docker_conf "/etc/init/mesos-master-docker.conf" \
   "mesosphere/mesos-master" \
   "0.28.0-2.0.16.ubuntu1404" \
   "mesos_master" \
-  "routed" \
   "$MESOS_MASTER_IP/32" \
   "--registry=replicated_log" \
   "-v mesos-master-$CONTROLLER_ID:/opt/mesos:rw,ceph" \

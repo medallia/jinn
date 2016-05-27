@@ -18,7 +18,14 @@ function add-repo() {
   apt-get update -o Dir::Etc::sourcelist="sources.list.d/${NAME}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 }
 
-function get_file() {
+function copy_file(){
+  local _FILE="${1}"
+  local _DEST="${2}"
+  local _HOST="/vagrant/files"
+  cp "${_HOST}/${_FILE}" ${_DEST}
+}
+
+function wget_file() {
   local _FILE="${1}"
   local _P="${2}"
   local _CACHE="/vagrant/cached-files"
@@ -86,30 +93,40 @@ function init_docker_conf() {
   local _IMAGE=$3
   local _TAG=$4
   local _CONTAINER=$5
-  local _NETWORK=$6
-  local _IP=$7
-  local _ARGS=$8
-  shift 8
-cat <<EOF> "$_FILE"
-description "$_DESCRIPTION"
-start on filesystem and started docker
-stop on runlevel [!2345]
-respawn
-respawn limit unlimited
-env TAG=$_TAG
-script
-  [ -f /etc/default/$CONTAINER ] && . /etc/default/$_CONTAINER
-  /usr/bin/docker rm --force=true $_CONTAINER || true
-  exec docker run --rm -t $@ --net=$_NETWORK --ip-address=$_IP \
-    --name=$_CONTAINER \
-    $_IMAGE:\$TAG $_ARGS
-end script
-pre-start script
-  [ -f /etc/default/$_CONTAINER ] && . /etc/default/$_CONTAINER
-  /usr/bin/docker pull $_IMAGE:\$TAG || true
-end script
-pre-stop script
-  /usr/bin/docker rm --force=true $_CONTAINER || true
-end script
+  local _IP=$6
+  local _ARGS=$7
+  local _NETDRIVER=""
+  local _IPA=""
+
+  shift 7
+
+  if [[ -z "${_IP}" ]]; then
+    _NETDRIVER="host"
+  else
+    _NETDRIVER="routed"
+    _IPA="--ip-address=${_IP}"
+  fi
+
+  cat <<-EOF> "$_FILE"
+  description "$_DESCRIPTION"
+  start on filesystem and started docker
+  stop on runlevel [!2345]
+  respawn
+  respawn limit unlimited
+  env TAG=$_TAG
+  script
+    [ -f /etc/default/$CONTAINER ] && . /etc/default/$_CONTAINER
+    /usr/bin/docker rm --force=true $_CONTAINER || true
+    exec docker run --rm -t $@ --net=$_NETDRIVER $_IPA \
+      --name=$_CONTAINER \
+      $_IMAGE:\$TAG $_ARGS
+  end script
+  pre-start script
+    [ -f /etc/default/$_CONTAINER ] && . /etc/default/$_CONTAINER
+    /usr/bin/docker pull $_IMAGE:\$TAG || true
+  end script
+  pre-stop script
+    /usr/bin/docker rm --force=true $_CONTAINER || true
+  end script
 EOF
 }
