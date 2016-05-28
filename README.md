@@ -31,7 +31,15 @@ cp jinn-small.yml jinn.yml
 ```
 vagrant up
 ```
+## Test
 
+- Install Aurora client
+TBD: need to host the binary somewhere
+
+- Launch the example
+```
+aurora job create jinn/test/devel/dockerTest /vagrant/examples/dockertest.aurora
+```
 
 ## Troubleshooting
 
