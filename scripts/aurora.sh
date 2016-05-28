@@ -14,6 +14,22 @@ if [[ -z "$CONTROLLER_ID" || -z "$AURORA_SCHEDULER_IP" || -z "$ZK_HOSTS" || -z "
   exit 1
 fi
 
+FILE="aurora-tools_0.12.0_amd64.deb"
+_F=$(wget_file $FILE "https://bintray.com/apache/aurora/download_file?file_path=ubuntu-trusty")
+dpkg -i "${_F}"
+
+# Install Aurora CLI tools
+cat <<EOF> "/etc/aurora/clusters.json"
+[{
+ "name": "$DC_NAME",
+ "zk": "$ZK_HOSTS",
+ "scheduler_zk_path": "/aurora/scheduler",
+ "auth_mechanism": "UNAUTHENTICATED",
+ "slave_run_directory": "latest",
+ "slave_root": "/var/lib/mesos"
+}]
+EOF
+
 # TODO: Tune the size of the image created
 AURORA_PATH=$(create_image aurora-${CONTROLLER_ID})
 if [[ -n "$AURORA_PATH" ]]; then
