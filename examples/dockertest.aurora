@@ -1,0 +1,20 @@
+web = Process( name = 'web', cmdline = "cd /web && python -m SimpleHTTPServer 8000" )
+
+test_task = Task(
+        name = 'testTask',
+        processes = [web],
+        resources = Resources(cpu = 1, ram = 1*MB, disk=2*MB) )
+
+jobs = [Service( name='dockerTest',
+             task=test_task,
+             role='test',
+             environment='devel',
+             cluster="jinn",
+             container = Container(docker = Docker(
+			 image = 'python:2.7',
+			 parameters = [
+				Parameter(name = 'net', value = 'routed'),
+				Parameter(name = 'ip-address', value = '10.112.100.10'),
+				Parameter(name = 'volume', value = '/vagrant/examples/web:/web')
+			 ]
+			 )))] 
