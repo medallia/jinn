@@ -33,13 +33,14 @@ vagrant up
 ```
 ## Test
 
-- Install Aurora client
-TBD: need to host the binary somewhere
-
-- Launch the example
+- ssh to a controller and launch the example
 ```
+vagrant ssh controller1
+
 aurora job create jinn/test/devel/dockerTest /vagrant/examples/dockertest.aurora
 ```
+Use your browser and go to the following URL:
+http://10.112.100.10:8000/
 
 ## Troubleshooting
 
