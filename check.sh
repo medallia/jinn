@@ -60,17 +60,20 @@ aurora=()
 routes=$(vssh $first_vm 'sudo vtysh -c "show ip route ospf"'  | grep "O>\*" | awk '{print $2}')
 while IFS= read -r line; do
   IFS='/' read ip suffix <<< "${line}"
-  if [[ $ip == 192.* ]]; then
-    zkhosts+=($ip)
-  fi
   IFS=. read -r i1 i2 i3 i4 <<< "$ip"
 
-  if [ "$i4" -lt "20" ]; then
-    mesos+=($ip)
-  fi
+  if [ "$i3" -eq "255" ]; then
+    if [[ $ip == 192.168.255.* ]]; then
+      zkhosts+=($ip)
+    fi
 
-  if [ "$i4" -lt "30" ] && [ "$i4" -gt "20" ]; then
-    aurora+=($ip)
+    if [ "$i4" -lt "20" ]; then
+      mesos+=($ip)
+    fi
+
+    if [ "$i4" -lt "30" ] && [ "$i4" -gt "20" ]; then
+      aurora+=($ip)
+    fi
   fi
   printf "\t%s/%s\n" $ip $suffix
 done <<< "$routes"
@@ -78,10 +81,10 @@ done <<< "$routes"
 printf "\n\nChecking Ceph \n"
 (
   health=$(vssh $first_vm 'sudo ceph health')
-  if [[ $health == "HEALTH_OK" || $health == "HEALTH_WARN" ]]; then
-    pass "%s\n" $health
+  if [[ $health =~ "HEALTH_OK" || $health =~ "HEALTH_WARN" ]]; then
+    pass "%s\n" "$health"
   else
-    fail "%s\n" $health
+    fail "%s\n" "$health"
   fi
 )
 
