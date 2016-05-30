@@ -5,3 +5,4 @@ disk-*.vdi
 ceph
 username
 cached-files
+registry-data

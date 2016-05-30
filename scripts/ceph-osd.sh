@@ -61,7 +61,7 @@ function whitelisted_controller () {
     return 1
 }
 
-if [[ -z "$RACK" || -z "$HOSTNAME" ]]; then
+if [[ -z "$RACK" || -z "$HOSTNAME" || -z "$PGNUM" ]]; then
   echo "Missing Parameter(s)"
   exit 1
 fi
@@ -81,3 +81,6 @@ for sysblock in /sys/block/sd*; do
         echo "Skipping ${devnode}"
     fi
 done
+
+## Add here temporarily.
+set_pgnum ${PGNUM} || true

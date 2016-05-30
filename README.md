@@ -112,6 +112,16 @@ mesos-master-docker.log
 aurora-scheduler.log
 ```
 
+## Starting a fresh environment
+If you have errors that you cannot diagnose and solve, you may want to start from zero. To speed things up, some state is preserved on the host.
+To clear the state:
+```
+vagrant destroy -f
+rm -rf ceph
+rm -rf cached-files
+rm -rf registry-data
+vagrant up
+```
 ___________________________________________________
 *Copyright 2016 Medallia Inc. All rights reserved*
 

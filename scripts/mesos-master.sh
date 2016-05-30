@@ -22,7 +22,7 @@ fi
 init_docker_conf "/etc/init/mesos-master-docker.conf" \
   "Mesos Master" \
   "mesosphere/mesos-master" \
-  "0.28.0-2.0.16.ubuntu1404" \
+  "0.28.1-2.0.20.ubuntu1404" \
   "mesos_master" \
   "$MESOS_MASTER_IP/32" \
   "--registry=replicated_log" \
