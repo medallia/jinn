@@ -76,9 +76,6 @@ fi
 if has "OSD" "${SRVROLES[@]}"; then
   echo ">>> Installing Ceph OSDs"
   call ceph-osd.sh
-
-  set_pgnum ${PGNUM} || true
-
 fi
 
 if has "MESOS-SLAVE" "${SRVROLES[@]}"; then

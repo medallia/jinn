@@ -31,7 +31,7 @@ fi
 init_docker_conf "/etc/init/mesos-slave-docker.conf" \
   "Mesos Slave" \
   "mesosphere/mesos-slave" \
-  "0.28.0-2.0.16.ubuntu1404" \
+  "0.28.1-2.0.20.ubuntu1404" \
   "mesos_slave" \
   "" \
   "" \

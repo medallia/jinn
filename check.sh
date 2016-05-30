@@ -2,6 +2,7 @@
 # Copyright 2016 Medallia Inc. All rights reserved
 # Use of this source code is governed by the Apache 2.0
 # license that can be found in the LICENSE file.
+set -eu
 
 pass(){
   printf $(tput setaf 2)
@@ -30,7 +31,10 @@ USER="$(cat $DIR/username)"
 
 printf "Running VMs\n"
 vms=$(VBoxManage list runningvms | grep -E "jinn_" | awk -F'[\"|\"]' '{print $2}')
-
+if [ -z "$vms" ]; then
+  fail "No runing VMs\n"
+  exit
+fi
 (while IFS= read -r line; do
   interface=$(VBoxManage showvminfo ${line} --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
   ip=$(VBoxManage guestproperty get $line /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
@@ -52,6 +56,12 @@ else
   pass "Found route %s \n" $gtw
 fi
 
+printf "\n\nIP Hostnames \n"
+hosts=$(vssh $first_vm 'cat /etc/hosts | grep jinn')
+(while IFS= read -r line; do
+  echo $line
+done <<< "$hosts")
+
 printf "\n\nChecking OSPF routes (dynamic routes)\n"
 zkhosts=()
 mesos=()
@@ -62,16 +72,16 @@ while IFS= read -r line; do
   IFS='/' read ip suffix <<< "${line}"
   IFS=. read -r i1 i2 i3 i4 <<< "$ip"
 
-  if [ "$i3" -eq "255" ]; then
+  if [[ "$i3" -eq "255" ]]; then
     if [[ $ip == 192.168.255.* ]]; then
       zkhosts+=($ip)
     fi
 
-    if [ "$i4" -lt "20" ]; then
+    if [[ "$i4" -lt "20" ]]; then
       mesos+=($ip)
     fi
 
-    if [ "$i4" -lt "30" ] && [ "$i4" -gt "20" ]; then
+    if [[ "$i4" -lt "30" ]] && [[ "$i4" -gt "20" ]]; then
       aurora+=($ip)
     fi
   fi
@@ -117,7 +127,7 @@ printf "\nChecking Mesos \n"
   for ip in "${mesos[@]}"; do 
     mode=$(curl -s http://$ip:5050/metrics/snapshot | grep -oh "elected\"\:1.0")
     mode=${mode##*:}
-    if [ "${mode%.*}" -gt "0" ]; then
+    if [ -n "$mode" ] && [ "${mode%.*}" -gt "0" ]; then
       pass "%s: %s\n" $ip OK
     else
       fail "%s: %s\n" $ip NOK
@@ -130,10 +140,10 @@ printf "\nChecking Aurora \n"
 (
   for ip in "${aurora[@]}"; do 
     mode=$(curl -s http://$ip:8081/vars | grep framework_registered)
-    if [ "${mode#* }" -gt "0" ]; then
+    if [ -n "$mode" ] && [ "${mode#* }" -gt "0" ]; then
       pass "%s: %s\n" $ip OK
     else
-      pass "%s: %s\n" $ip NOK
+      fail "%s: %s\n" $ip NOK
     fi
     
   done 

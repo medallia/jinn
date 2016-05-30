@@ -39,7 +39,7 @@ fi
 init_docker_conf "/etc/init/aurora-scheduler.conf" \
   "Aurora Scheduler" \
   "medallia/aurora-scheduler" \
-  "0.12.0-medallia-2" \
+  "v1.0.0-0.12.0-medallia-2" \
   "aurora_scheduler" \
   "$AURORA_SCHEDULER_IP/32" \
   "-cluster_name=${DC_NAME} \

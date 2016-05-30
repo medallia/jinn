@@ -24,7 +24,7 @@ apt-get -y install ceph
 mkdir -p /vagrant/ceph
 
 if [ ! -e /vagrant/ceph/$CLUSTER.client.admin.keyring ]; then
-  ceph-authtool --create-keyring /vagrant/ceph/ceph.client.admin.keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
+  ceph-authtool --create-keyring /vagrant/ceph/$CLUSTER.client.admin.keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
 fi
 
 if [ ! -e /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring ]; then
@@ -66,8 +66,8 @@ END
 #chmod 755 /usr/bin/remove-rbd-own-locks
 
 
-if [ -e /vagrant/$CLUSTER/$CLUSTER.client.admin.keyring ]; then
-  cp /vagrant/$CLUSTER/$CLUSTER.client.admin.keyring /etc/ceph/
+if [ -e /vagrant/ceph/$CLUSTER.client.admin.keyring ]; then
+  cp /vagrant/ceph/$CLUSTER.client.admin.keyring /etc/ceph/
   chown $USER:$GROUP /etc/ceph/$CLUSTER.client.admin.keyring
   chmod 0640 /etc/ceph/$CLUSTER.client.admin.keyring
 else
