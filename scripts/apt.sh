@@ -20,5 +20,5 @@ min="4.2.3-35-generic"
 lowest=$(printf "%s\n%s\n" "$(uname -r)" $min | sort -V | head -1)
 if [[ $min != $lowest ]]; then
   echo ">>> Upgrading kernel from ${lowest}"
-  apt-get install -y linux-generic-lts-wily linux-headers-generic-lts-wily
+  apt-get install -y linux-generic-lts-xenial linux-headers-generic-lts-xenial
 fi
