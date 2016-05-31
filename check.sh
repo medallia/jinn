@@ -72,10 +72,12 @@ fi
 
 title "\n\nIP Hostnames \n"
 
+ips=()
 hosts=$(vssh ${vm}  'cat /etc/hosts | grep jinn')
-(while IFS= read -r line; do
+while IFS= read -r line; do
   echo $line
-done <<< "$hosts")
+  ips+=(${line%% *})
+done <<< "$hosts"
 
 title "\n\nChecking OSPF routes (dynamic routes)\n"
 zkhosts=()
@@ -163,6 +165,17 @@ title "\nChecking Mesos \n"
   fi
 
 )
+
+title "\nChecking Mesos Agents \n"
+
+for ip in "${ips[@]}"; do
+  out=$(curl -s http://$ip:5051/state | grep -o '\"git_tag\":\"[0-9."]*')
+  if [[ -n "$out" ]]; then
+    printf "%s: %s\n" $ip $out
+  else
+    printf "%s: %s\n" $ip "No Agent"
+  fi
+done
 
 title "\nChecking Aurora \n"
 (
