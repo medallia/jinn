@@ -2,7 +2,7 @@
 # Copyright 2016 Medallia Inc. All rights reserved
 # Use of this source code is governed by the Apache 2.0
 # license that can be found in the LICENSE file.
-set -eu
+set -u
 
 pass(){
   printf $(tput setaf 2)
@@ -14,13 +14,20 @@ fail(){
   printf "${@}"
   printf $(tput sgr0)
 }
+title(){
+  printf $(tput bold)
+  printf "${@}"
+  printf $(tput sgr0)
+}
+
+
 function vssh(){
   # inspired from https://github.com/filex/vagrant-ssh
   local vm=${1##*_}
   local port=$(VBoxManage showvminfo $1 |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
   shift 1
 
-  exec ssh -o Compression=yes -o DSAAuthentication=yes -o LogLevel=FATAL \
+  ssh -o Compression=yes -o DSAAuthentication=yes -o LogLevel=FATAL \
        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
        -o IdentitiesOnly=yes -i $DIR/.vagrant/machines/$vm/virtualbox/private_key \
        $USER@127.0.0.1 -p $port $@
@@ -29,25 +36,32 @@ function vssh(){
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 USER="$(cat $DIR/username)"
 
-printf "Running VMs\n"
-vms=$(VBoxManage list runningvms | grep -E "jinn_" | awk -F'[\"|\"]' '{print $2}')
-if [ -z "$vms" ]; then
+title "Running VMs\n"
+read -a vms <<< $(VBoxManage list runningvms | grep -E "jinn_" | awk -v ORS=" " -F "[\"|\"]" '{print $2}')
+
+if [ ${#vms[@]} -lt 1 ]; then
   fail "No runing VMs\n"
   exit
 fi
-(while IFS= read -r line; do
-  interface=$(VBoxManage showvminfo ${line} --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
-  ip=$(VBoxManage guestproperty get $line /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
-  netmask=$(VBoxManage guestproperty get $line /VirtualBox/GuestInfo/Net/1/V4/Netmask | awk -F":" '{gsub(/ /, "", $2);print $2}')
-  port=$(VBoxManage showvminfo $line |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
-  printf '%s:%s:%s:%s/%s\n' $line $interface $ip $port $netmask 
-done <<< "$vms") | column -s ':' -t
+count=0
+for vm in "${vms[@]}"; do
+  if [[ $count -lt 1 ]]; then
+    printf '%s:%s:%s:%s:%s\n' "VM Name" Interface IP "SSH port" Netmask 
+  fi
+  interface=$(VBoxManage showvminfo ${vm} --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
+  ip=$(VBoxManage guestproperty get $vm /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
+  netmask=$(VBoxManage guestproperty get $vm /VirtualBox/GuestInfo/Net/1/V4/Netmask | awk -F":" '{gsub(/ /, "", $2);print $2}')
+  port=$(VBoxManage showvminfo $vm |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
+  printf '%s:%s:%s:%s:%s\n' $vm $interface $ip $port $netmask 
+  (( count ++ ))
+done | column -s ':' -t
 
-first_vm=$(echo $vms | awk '{print $1}')
-ip=$(VBoxManage guestproperty get $first_vm /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
-interface=$(VBoxManage showvminfo $first_vm --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
+vm=${vms[0]}
 
-printf "\nChecking local route to %s\n" $ip
+ip=$(VBoxManage guestproperty get ${vm} /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
+interface=$(VBoxManage showvminfo ${vm}  --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
+
+title "\nChecking local route to %s\n" $ip
 
 gtw=$(route get $ip | grep interface | awk -F':' '{gsub(/ /, "", $2);print $2}')
 if [[ $gtw != $interface ]]; then
@@ -56,18 +70,19 @@ else
   pass "Found route %s \n" $gtw
 fi
 
-printf "\n\nIP Hostnames \n"
-hosts=$(vssh $first_vm 'cat /etc/hosts | grep jinn')
+title "\n\nIP Hostnames \n"
+
+hosts=$(vssh ${vm}  'cat /etc/hosts | grep jinn')
 (while IFS= read -r line; do
   echo $line
 done <<< "$hosts")
 
-printf "\n\nChecking OSPF routes (dynamic routes)\n"
+title "\n\nChecking OSPF routes (dynamic routes)\n"
 zkhosts=()
 mesos=()
 aurora=()
 
-routes=$(vssh $first_vm 'sudo vtysh -c "show ip route ospf"'  | grep "O>\*" | awk '{print $2}')
+routes=$(vssh ${vm}  'sudo vtysh -c "show ip route ospf"'  | grep "O>\*" | awk '{print $2}')
 while IFS= read -r line; do
   IFS='/' read ip suffix <<< "${line}"
   IFS=. read -r i1 i2 i3 i4 <<< "$ip"
@@ -85,12 +100,12 @@ while IFS= read -r line; do
       aurora+=($ip)
     fi
   fi
-  printf "\t%s/%s\n" $ip $suffix
+  printf "%s/%s\n" $ip $suffix
 done <<< "$routes"
 
-printf "\n\nChecking Ceph \n"
+title "\n\nChecking Ceph \n"
 (
-  health=$(vssh $first_vm 'sudo ceph health')
+  health=$(vssh ${vm} 'sudo timeout 5 ceph health')
   if [[ $health =~ "HEALTH_OK" || $health =~ "HEALTH_WARN" ]]; then
     pass "%s\n" "$health"
   else
@@ -98,21 +113,24 @@ printf "\n\nChecking Ceph \n"
   fi
 )
 
-printf "\nChecking Monitors\n"
+title "\nChecking Monitors\n"
 (
-  vssh $first_vm 'sudo ceph mon stat' | tee
+  vssh ${vm} 'sudo ceph mon stat' | tee
 )
 
-printf "\nChecking Zookeeper \n"
+title "\nChecking Zookeeper \n"
 (
   count=0
-  for ip in "${zkhosts[@]}"; do 
-    mode=$(vssh $first_vm "echo stat | nc $ip 2181 | grep Mode")
-    mode=${mode##*: }
-    if [[ "${mode}" == "standalone" || "${mode}" == "Leader" ]]; then
-      (( count ++ ))
+  for ip in "${zkhosts[@]-}"; do 
+    # bash doesn't recognize empty arrays
+    if [[ -n $ip ]]; then
+      mode=$(vssh ${vm} "echo stat | nc $ip 2181 | grep Mode")
+      mode=${mode##*: }
+      if [[ "${mode}" == "standalone" || "${mode}" == "leader" ]]; then
+        (( count ++ ))
+      fi
+      printf "%s: %s\n" $ip ${mode}
     fi
-    printf "%s: %s\n" $ip ${mode}
   done 
   if [ "$count" -lt "1" ]; then
     fail "No leader elected\n"
@@ -122,31 +140,50 @@ printf "\nChecking Zookeeper \n"
 )
 
 
-printf "\nChecking Mesos \n"
+title "\nChecking Mesos \n"
 (
-  for ip in "${mesos[@]}"; do 
-    mode=$(curl -s http://$ip:5050/metrics/snapshot | grep -oh "elected\"\:1.0")
-    mode=${mode##*:}
-    if [ -n "$mode" ] && [ "${mode%.*}" -gt "0" ]; then
-      pass "%s: %s\n" $ip OK
-    else
-      fail "%s: %s\n" $ip NOK
+  count=0
+  for ip in "${mesos[@]-}"; do 
+    # bash doesn't recognize empty arrays
+    if [[ -n $ip ]]; then
+      mode=$(curl -s http://$ip:5050/metrics/snapshot | grep -oh "elected\"\:1.0")
+      mode=${mode##*:}
+      if [ -n "$mode" ] && [ "${mode%.*}" -gt "0" ]; then
+        printf "%s: %s\n" $ip Leader
+        (( count ++ ))
+      else
+        printf "%s: %s\n" $ip "Not Leader"
+      fi
     fi
-    
   done 
+  if [ "$count" -lt "1" ]; then
+    fail "No leader elected\n"
+  else
+    pass "leader elected\n"
+  fi
+
 )
 
-printf "\nChecking Aurora \n"
+title "\nChecking Aurora \n"
 (
-  for ip in "${aurora[@]}"; do 
-    mode=$(curl -s http://$ip:8081/vars | grep framework_registered)
-    if [ -n "$mode" ] && [ "${mode#* }" -gt "0" ]; then
-      pass "%s: %s\n" $ip OK
-    else
-      fail "%s: %s\n" $ip NOK
+  count=0
+  for ip in "${aurora[@]-}"; do 
+    # bash doesn't recognize empty arrays
+    if [[ -n $ip ]]; then
+      mode=$(curl -s http://$ip:8081/vars | grep framework_registered)
     fi
-    
+    if [ -n "$mode" ] && [ "${mode#* }" -gt "0" ]; then
+      printf "%s: %s\n" $ip Leader
+      (( count ++ ))
+    else
+      printf "%s: %s\n" $ip "Not Leader"
+    fi
   done 
+  if [ "$count" -lt "1" ]; then
+    fail "No leader elected\n"
+  else
+    pass "leader elected\n"
+  fi
 )
 printf "\n"
 
