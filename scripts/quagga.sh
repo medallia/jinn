@@ -47,7 +47,7 @@ interface ${INTERFACE}
 !
 EOF
 
-cat <<EOF >/etc/sysctl.d/60-jinn-routing.conf
+cat <<EOF >/etc/sysctl.d/60-bootstrap-routing.conf
 #Proxy ARP on container interfaces
 net.ipv4.conf.default.proxy_arp = 1
 #Forward IPv4

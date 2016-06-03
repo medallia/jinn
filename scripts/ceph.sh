@@ -9,7 +9,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 RELEASE=infernalis
 
-if [[ -z "$CLUSTER" || -z "$HOSTNAME" || -z "$FSID" || -z "$PGNUM" ]]; then
+if [[ -z "$CLUSTER" || -z "$HOSTNAME" || -z "$FSID" || -z "$PGNUM" || -z "$NBMONS" ]]; then
   echo "Missing Parameter(s)"
   exit 1
 fi
@@ -39,7 +39,6 @@ if [ ! -e /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring ]; then
   ceph-authtool /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-rgw --cap mon 'allow profile bootstrap-rgw'
 fi
 
-NBMONS=$(get_property NBMONS)
 
 cat > /etc/ceph/ceph.conf <<- END
   [global]
