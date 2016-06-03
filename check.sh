@@ -43,6 +43,7 @@ if [ ${#vms[@]} -lt 1 ]; then
   fail "No runing VMs\n"
   exit
 fi
+
 count=0
 for vm in "${vms[@]}"; do
   if [[ $count -lt 1 ]]; then
@@ -169,7 +170,7 @@ title "\nChecking Mesos \n"
 title "\nChecking Mesos Agents \n"
 
 for ip in "${ips[@]}"; do
-  out=$(curl -s http://$ip:5051/state | grep -o '\"git_tag\":\"[0-9."]*')
+  out=$(curl -s http://$ip:5051/state | grep -o '\"attributes\":\"[a-z;:0-9."\-]*')
   if [[ -n "$out" ]]; then
     printf "%s: %s\n" $ip $out
   else

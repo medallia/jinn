@@ -47,53 +47,59 @@ CEPH_MON_ID=$(get_property CEPH_MON_ID)
 CLUSTER=$(get_property CLUSTER)
 
 PGNUM=$(get_property PGNUM)
+NBMONS=$(get_property NBMONS)
 
-echo ">>> Updating APT sources"
-call apt.sh
+function main(){
 
-echo ">>> Updating Hostname and /etc/hosts"
-call host.sh
+  echo ">>> Updating APT sources"
+  call apt.sh
 
-echo ">>> Installing Quagga"
-call quagga.sh
+  echo ">>> Updating Hostname and /etc/hosts"
+  call host.sh
 
-echo ">>> Installing Docker"
-call docker.sh
+  echo ">>> Installing Quagga"
+  call quagga.sh
 
-echo ">>> Installing Ceph client"
-call ceph.sh
+  echo ">>> Installing Docker"
+  call docker.sh
 
-if has "REGISTRY" "${SRVROLES[@]}"; then
-  echo ">>> Installing Docker Registry"
-  call registry.sh
-fi
+  echo ">>> Installing Ceph client"
+  call ceph.sh
 
-if has "MON" "${SRVROLES[@]}"; then
-  echo ">>> Installing Ceph Monitors"
-  call ceph-mon.sh
-fi
+  if has "REGISTRY" "${SRVROLES[@]}"; then
+    echo ">>> Installing Docker Registry"
+    call registry.sh
+  fi
 
-if has "OSD" "${SRVROLES[@]}"; then
-  echo ">>> Installing Ceph OSDs"
-  call ceph-osd.sh
-fi
+  if has "MON" "${SRVROLES[@]}"; then
+    echo ">>> Installing Ceph Monitors"
+    call ceph-mon.sh
+  fi
 
-if has "MESOS-SLAVE" "${SRVROLES[@]}"; then
-  echo ">>> Installing Mesos nodes"
-  call mesos-slave.sh
-fi
+  if has "OSD" "${SRVROLES[@]}"; then
+    echo ">>> Installing Ceph OSDs"
+    call ceph-osd.sh
+  fi
 
-if has "ZK" "${SRVROLES[@]}"; then
-  echo ">>> Installing Zookeeper"
-  call zookeeper.sh
-fi
+  if has "MESOS-SLAVE" "${SRVROLES[@]}"; then
+    echo ">>> Installing Mesos nodes"
+    call mesos-slave.sh
+  fi
 
-if has "MESOS-MASTER" "${SRVROLES[@]}"; then
-  echo ">>> Installing Mesos Master"
-  call mesos-master.sh
-fi
+  if has "ZK" "${SRVROLES[@]}"; then
+    echo ">>> Installing Zookeeper"
+    call zookeeper.sh
+  fi
 
-if has "AURORA" "${SRVROLES[@]}"; then
-  echo ">>> Installing Aurora Scheduler"
-  call aurora.sh
-fi
+  if has "MESOS-MASTER" "${SRVROLES[@]}"; then
+    echo ">>> Installing Mesos Master"
+    call mesos-master.sh
+  fi
+
+  if has "AURORA" "${SRVROLES[@]}"; then
+    echo ">>> Installing Aurora Scheduler"
+    call aurora.sh
+  fi
+}
+
+main "$@"

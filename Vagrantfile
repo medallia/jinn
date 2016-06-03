@@ -110,8 +110,6 @@ end
 
 ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 
-VAGRANT_ROOT = File.dirname(File.expand_path(__FILE__))
-
 QUORUM = (roles['controller']['servers'].length/2.0).ceil
 CONTROLLERS = roles['controller']['servers'].join(" ")
 SLAVES = roles['node']['servers'].join(" ")
@@ -133,7 +131,7 @@ Vagrant.configure(2) do |cluster|
   cluster.ssh.password = jinn['OS']['password']
 
   #saving username for further usage
-  File.open('username', 'w') { |file| file.write(cluster.ssh.password) }
+  File.open(File.join(vagrant_root,'username'), 'w') { |file| file.write(cluster.ssh.username) }
 
   unless IMAGE_URL.nil?
       cluster.vm.box_url = IMAGE_URL
@@ -167,8 +165,9 @@ Vagrant.configure(2) do |cluster|
           vb.name = "jinn_"+name+index
           unless disks.nil?
             disks.each do |x, size|
-              if ! File.exist?("disk-#{name}#{index}-#{x}.vdi")
-                vb.customize [ "createhd", "--filename", "disk-#{name}#{index}-#{x}.vdi", "--size", 1024*size ]
+              diskfile=File.join(vagrant_root,"disk-#{name}#{index}-#{x}.vdi")
+              if ! File.exist?(diskfile)
+                vb.customize [ "createhd", "--filename", diskfile, "--size", 1024*size ]
               end
               vb.customize [ "storageattach", :id,
                   "--storagectl", jinn['OS']['storagectl'],
