@@ -76,3 +76,28 @@ ip route add blackhole $CIDR metric 50
 exit 0
 EOF
 
+cat <<EOF > /etc/network/interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+auto eth0
+iface eth0 inet dhcp
+pre-up sleep 2
+
+auto data0
+iface data0 inet static
+  mtu 9000
+  address $NET_IP
+  netmask $NET_MASK
+EOF
+
+rm -rf /etc/udev/rules.d/70-persistent-net.rules || true
+
+NET_MAC="$(ip link show "eth1" | tail --lines 1 | sed -r -e 's/.+ether ([0-9a-f:]+) .*/\1/')"
+
+echo > /etc/udev/rules.d/70-persistent-net.rules "SUBSYSTEM==\"net\", ACTION==\"add\", ATTR{address}==\"${NET_MAC}\", NAME=\"data0\""
