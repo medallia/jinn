@@ -86,7 +86,7 @@ Vagrant.configure(2) do |cluster|
     servers.each do |server|
       index = (servers.index(server)+1).to_s
       cluster.vm.define name+index do |box|
-        box.vm.network "private_network", ip: server, netmask:netmask, nic_type: NICTYPE
+        box.vm.network "private_network", ip: server, netmask:netmask, nic_type: NICTYPE, auto_config: false
         box.vm.synced_folder "cached-files", "/var/tmp/bootstrap"
         box.vm.provider :virtualbox do |vb|
           vb.memory = resources['memory']
