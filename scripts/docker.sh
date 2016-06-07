@@ -27,9 +27,6 @@ FILE="docker-1.9.1-medallia-2-linux-amd64"
 _F=$(wget_file $FILE "https://github.com/medallia/docker/releases/download/v1.9.1-medallia-2")
 sudo cp ${_F} /usr/bin/docker && sudo chmod +x /usr/bin/docker
 
-# Docker init-script has changed upstream, we expect -d, init script uses daemon
-sed -i -e 's/exec \"$DOCKER\" daemon/exec \"$DOCKER\" -d/' /etc/init/docker.conf
-
 chmod a+x /usr/bin/docker
 
 # Docker access for medallia user
