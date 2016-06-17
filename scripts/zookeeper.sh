@@ -22,7 +22,7 @@ fi
 init_docker_conf "/etc/init/zookeeper-docker.conf" \
     "Zookeeper For Mesos Cluster" \
     "medallia/docker-zookeeper" \
-    "v2.0.1-zk-3.4.8" \
+    "v2.0.2-zk-3.4.8" \
     "zookeeper" \
     "$ZK_IP/32" \
     "" \
