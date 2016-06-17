@@ -40,7 +40,7 @@ UNIT=$(get_property UNIT)
 
 ZK_HOSTS=$(get_property ZK_HOSTS)
 
-INTERFACE="data0"
+INTERFACE="eth1"
 
 CONTROLLER_ID=$(get_property CONTROLLER_ID)
 CEPH_MON_ID=$(get_property CEPH_MON_ID)
