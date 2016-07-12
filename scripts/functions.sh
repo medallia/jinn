@@ -115,7 +115,7 @@ function init_docker_conf() {
   respawn limit unlimited
   env TAG=$_TAG
   script
-    [ -f /etc/default/$CONTAINER ] && . /etc/default/$_CONTAINER
+    [ -f /etc/default/$_CONTAINER ] && . /etc/default/$_CONTAINER
     /usr/bin/docker rm --force=true $_CONTAINER || true
     exec docker run --rm -t $@ --net=$_NETDRIVER $_IPA \
       --name=$_CONTAINER \

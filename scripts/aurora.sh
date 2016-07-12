@@ -31,9 +31,9 @@ cat <<EOF> "/etc/aurora/clusters.json"
 EOF
 
 # TODO: Tune the size of the image created
-AURORA_PATH=$(create_image aurora-${CONTROLLER_ID})
+AURORA_PATH=$(create_image aurora-"${CONTROLLER_ID}")
 if [[ -n "$AURORA_PATH" ]]; then
-  unmount_image aurora-${CONTROLLER_ID}
+  unmount_image aurora-"${CONTROLLER_ID}"
 fi
 
 init_docker_conf "/etc/init/aurora-scheduler.conf" \

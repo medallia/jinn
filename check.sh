@@ -24,20 +24,21 @@ title(){
 function vssh(){
   # inspired from https://github.com/filex/vagrant-ssh
   local vm=${1##*_}
-  local port=$(VBoxManage showvminfo $1 |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
+  local port
+  port=$(VBoxManage showvminfo "$1" |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
   shift 1
 
   ssh -o Compression=yes -o DSAAuthentication=yes -o LogLevel=FATAL \
        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-       -o IdentitiesOnly=yes -i $DIR/.vagrant/machines/$vm/virtualbox/private_key \
-       $USER@127.0.0.1 -p $port $@
+       -o IdentitiesOnly=yes -i "$DIR"/.vagrant/machines/"$vm"/virtualbox/private_key \
+       "$USER@127.0.0.1" -p "$port" "$@"
 }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-USER="$(cat $DIR/username)"
+USER="$(cat "$DIR"/username)"
 
 title "Running VMs\n"
-read -a vms <<< $(VBoxManage list runningvms | grep -E "jinn_" | awk -v ORS=" " -F "[\"|\"]" '{print $2}')
+read -r -a vms <<< $(VBoxManage list runningvms | grep -E "jinn_" | awk -v ORS=" " -F "[\"|\"]" '{print $2}')
 
 if [ ${#vms[@]} -lt 1 ]; then
   fail "No runing VMs\n"
@@ -49,24 +50,24 @@ for vm in "${vms[@]}"; do
   if [[ $count -lt 1 ]]; then
     printf '%s:%s:%s:%s:%s\n' "VM Name" Interface IP "SSH port" Netmask 
   fi
-  interface=$(VBoxManage showvminfo ${vm} --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
-  ip=$(VBoxManage guestproperty get $vm /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
-  netmask=$(VBoxManage guestproperty get $vm /VirtualBox/GuestInfo/Net/1/V4/Netmask | awk -F":" '{gsub(/ /, "", $2);print $2}')
-  port=$(VBoxManage showvminfo $vm |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
-  printf '%s:%s:%s:%s:%s\n' $vm $interface $ip $port $netmask 
+  interface=$(VBoxManage showvminfo "$vm" --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
+  ip=$(VBoxManage guestproperty get "$vm" /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
+  netmask=$(VBoxManage guestproperty get "$vm" /VirtualBox/GuestInfo/Net/1/V4/Netmask | awk -F":" '{gsub(/ /, "", $2);print $2}')
+  port=$(VBoxManage showvminfo "$vm" |grep 'name = ssh' |sed -e 's/^.*host port = //' -e 's/,.*//')
+  printf '%s:%s:%s:%s:%s\n' "$vm" "$interface" "$ip" "$port" "$netmask"
   (( count ++ ))
 done | column -s ':' -t
 
 vm=${vms[0]}
 
-ip=$(VBoxManage guestproperty get ${vm} /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
-interface=$(VBoxManage showvminfo ${vm}  --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
+ip=$(VBoxManage guestproperty get "$vm" /VirtualBox/GuestInfo/Net/1/V4/IP | awk -F":" '{gsub(/ /, "", $2);print $2}')
+interface=$(VBoxManage showvminfo "$vm" --machinereadable | grep hostonlyadapter2 | awk -F"=" '{gsub(/\"/, "", $2);print $2}')
 
-title "\nChecking local route to %s\n" $ip
+title "\nChecking local route to %s\n" "$ip"
 
-gtw=$(route get $ip | grep interface | awk -F':' '{gsub(/ /, "", $2);print $2}')
+gtw=$(route get "$ip" | grep interface | awk -F':' '{gsub(/ /, "", $2);print $2}')
 if [[ $gtw != $interface ]]; then
-  fail "Wrong route to VMs: %s != %s \n" $gtw $interface
+  fail "Wrong route to VMs: %s != %s \n" "$gtw" "$interface"
 else
   pass "Found route %s \n" $gtw
 fi
@@ -124,6 +125,7 @@ title "\nChecking Monitors\n"
 title "\nChecking Zookeeper \n"
 (
   count=0
+  mode=""
   for ip in "${zkhosts[@]-}"; do 
     # bash doesn't recognize empty arrays
     if [[ -n $ip ]]; then
@@ -146,6 +148,7 @@ title "\nChecking Zookeeper \n"
 title "\nChecking Mesos \n"
 (
   count=0
+  mode=""
   for ip in "${mesos[@]-}"; do 
     # bash doesn't recognize empty arrays
     if [[ -n $ip ]]; then
@@ -181,6 +184,7 @@ done
 title "\nChecking Aurora \n"
 (
   count=0
+  mode=""
   for ip in "${aurora[@]-}"; do 
     # bash doesn't recognize empty arrays
     if [[ -n $ip ]]; then
