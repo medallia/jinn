@@ -32,8 +32,11 @@ chmod a+x /usr/bin/docker
 # Docker access for medallia user
 gpasswd -a $USER docker
 
-# TODO replace with appropriate hub configuration
-cat /vagrant/.dockercfg > /etc/dockercfg
+if [ -e /vagrant/.dockercfg ]; then
+  cp /vagrant/.dockercfg /etc/dockercfg
+else
+  echo "{}" > /etc/dockercfg
+fi
 
 rm -f /root/.dockercfg
 
