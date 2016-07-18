@@ -76,7 +76,7 @@ function get_property()
     if [ "$ip" = "$NET_IP" ]; then
       _CONTROLLER_ID=$counter
     fi
-    zk_ip="192.168.255.$(($counter + 30))"
+    zk_ip="192.168.255.$(( counter + 30 ))"
     array+=("$zk_ip:2181")
     (( counter ++ ))
   done
@@ -98,7 +98,7 @@ function get_property()
     fi
     (( counter ++ ))
   done
-  (( _NBMONS = $counter - 1 ))
+  (( _NBMONS = counter - 1 ))
 
   if [[ $_NBMONS -lt 3 ]]; then
     _PGNUM=128

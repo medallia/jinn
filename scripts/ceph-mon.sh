@@ -45,7 +45,7 @@ for i in "${CEPHNODES[@]}"; do
   (( counter++ ))
 done
 
-monmaptool --create $( echo "${array[*]}" ) --fsid $FSID --clobber $temp
+monmaptool --create "${array[*]}" --fsid $FSID --clobber $temp
 
 mv $temp /etc/ceph/monmap
 chown $USER:$GROUP /etc/ceph/monmap

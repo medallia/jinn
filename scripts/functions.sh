@@ -63,7 +63,7 @@ function call() {
 function create_image(){
   local _IMG=$1
   local _size=${2:-4G}  
-  if [[ -z  $(rbd ls | grep ${_IMG}) ]] ; then
+  if ! rbd ls | grep -q ${_IMG}; then
     rbd create ${_IMG} --size "${_size}"
     dev=$(rbd map ${_IMG})
     if [ -n "${dev}" ]; then
