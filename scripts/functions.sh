@@ -14,7 +14,7 @@ function add-repo() {
   local COMPONENT="$4"
   local KEY="${5:-}"
   [[ -n "${KEY}" ]] && wget -q -O - "${KEY}" | apt-key add -
-  echo >/etc/apt/sources.list.d/${NAME}.list "deb ${URL} ${DISTRO} ${COMPONENT}"
+  echo >"/etc/apt/sources.list.d/${NAME}.list" "deb ${URL} ${DISTRO} ${COMPONENT}"
   apt-get update -o Dir::Etc::sourcelist="sources.list.d/${NAME}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 }
 
@@ -22,7 +22,7 @@ function copy_file(){
   local _FILE="${1}"
   local _DEST="${2}"
   local _HOST="/vagrant/files"
-  cp "${_HOST}/${_FILE}" ${_DEST}
+  cp "${_HOST}/${_FILE}" "${_DEST}"
 }
 
 function wget_file() {
@@ -34,7 +34,7 @@ function wget_file() {
   if [[ ! -e ${_CACHE}/${_FILE} ]]; then
     mkdir -p ${_CACHE}
     _URL="${_P}/$_FILE"
-    wget --quiet $_URL -O ${_CACHE}/${_FILE}
+    wget --quiet "$_URL" -O "${_CACHE}/${_FILE}"
   fi
   echo "${_CACHE}/${_FILE}"
 }
@@ -63,13 +63,13 @@ function call() {
 function create_image(){
   local _IMG=$1
   local _size=${2:-4G}  
-  if ! rbd ls | grep -q ${_IMG}; then
-    rbd create ${_IMG} --size "${_size}"
-    dev=$(rbd map ${_IMG})
+  if ! rbd ls | grep -q "${_IMG}"; then
+    rbd create "${_IMG}" --size "${_size}"
+    dev=$(rbd map "${_IMG}")
     if [ -n "${dev}" ]; then
-      mkfs.ext4 -m0 $dev &>/dev/null
-      mkdir -p /mnt/${_IMG}
-      mount /dev/rbd/rbd/${_IMG} /mnt/${_IMG}
+      mkfs.ext4 -m0 "$dev" &>/dev/null
+      mkdir -p "/mnt/${_IMG}"
+      mount "/dev/rbd/rbd/${_IMG}" "/mnt/${_IMG}"
       echo "/mnt/${_IMG}"
       return 0
     fi
@@ -80,10 +80,11 @@ function create_image(){
 
 function unmount_image(){
   local _IMG=$1
-  local _device="$(rbd showmapped | grep ${_IMG} | awk '{print $5}')"
+  local _device
+  _device="$(rbd showmapped | grep "${_IMG}" | awk '{print $5}')"
   if [[ -n ${_device} ]]; then
-    umount /mnt/${_IMG} || true
-    rbd unmap ${_device} 
+    umount "/mnt/${_IMG}" || true
+    rbd unmap "${_device}"
   fi
 }
 

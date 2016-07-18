@@ -25,12 +25,12 @@ done
 
 FILE="docker-1.9.1-medallia-2-linux-amd64"
 _F=$(wget_file $FILE "https://github.com/medallia/docker/releases/download/v1.9.1-medallia-2")
-sudo cp ${_F} /usr/bin/docker && sudo chmod +x /usr/bin/docker
+sudo cp "${_F}" /usr/bin/docker && sudo chmod +x /usr/bin/docker
 
 chmod a+x /usr/bin/docker
 
 # Docker access for medallia user
-gpasswd -a $USER docker
+gpasswd -a "$USER" docker
 
 if [ -e /vagrant/.dockercfg ]; then
   cp /vagrant/.dockercfg /etc/dockercfg
