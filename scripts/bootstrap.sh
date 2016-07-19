@@ -24,12 +24,12 @@ fi
 SCRIPT_PATH="${1:-/vagrant/scripts}"
 
 # Hosts arrays computation
-IFS=' ' read -a CTRLNODES <<< "${CONTROLLERS}"
-IFS=' ' read -a SLNODES <<< "${SLAVES}"
-IFS=' ' read -a CEPHNODES <<< "${MONITORS}"
+IFS=' ' read -r -a CTRLNODES <<< "${CONTROLLERS}"
+IFS=' ' read -r -a SLNODES <<< "${SLAVES}"
+IFS=' ' read -r -a CEPHNODES <<< "${MONITORS}"
 
 # Roles
-IFS=' ' read -a SRVROLES <<< "${ROLES}"
+IFS=' ' read -r -a SRVROLES <<< "${ROLES}"
 
 . /vagrant/scripts/properties.sh
 . /vagrant/scripts/functions.sh

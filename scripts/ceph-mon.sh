@@ -20,52 +20,52 @@ GROUP="ceph"
 
 mkdir -p /vagrant/ceph
 
-if [ ! -e /vagrant/ceph/$CLUSTER.mon.keyring ]; then
-  ceph-authtool --create-keyring /vagrant/ceph/$CLUSTER.mon.keyring --gen-key -n mon. --cap mon 'allow *'
+if [ ! -e "/vagrant/ceph/$CLUSTER.mon.keyring" ]; then
+  ceph-authtool --create-keyring "/vagrant/ceph/$CLUSTER.mon.keyring" --gen-key -n mon. --cap mon 'allow *'
 
-  ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/$CLUSTER.client.admin.keyring
-  ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring
-  ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/bootstrap-mds.$CLUSTER.keyring
-  ceph-authtool /vagrant/ceph/$CLUSTER.mon.keyring --import-keyring /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring
+  ceph-authtool "/vagrant/ceph/$CLUSTER.mon.keyring" --import-keyring "/vagrant/ceph/$CLUSTER.client.admin.keyring"
+  ceph-authtool "/vagrant/ceph/$CLUSTER.mon.keyring" --import-keyring "/vagrant/ceph/bootstrap-osd.$CLUSTER.keyring"
+  ceph-authtool "/vagrant/ceph/$CLUSTER.mon.keyring" --import-keyring "/vagrant/ceph/bootstrap-mds.$CLUSTER.keyring"
+  ceph-authtool "/vagrant/ceph/$CLUSTER.mon.keyring" --import-keyring "/vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring"
 
-  chmod 0755 /vagrant/ceph/$CLUSTER.mon.keyring
+  chmod 0755 "/vagrant/ceph/$CLUSTER.mon.keyring"
 fi
 
 
-mkdir -p /var/lib/ceph/mon/$CLUSTER-$HOSTNAME
-chown $USER:$GROUP /var/lib/ceph/mon/$CLUSTER-$HOSTNAME
-chmod 0755 /var/lib/ceph/mon/$CLUSTER-$HOSTNAME
+mkdir -p "/var/lib/ceph/mon/$CLUSTER-$HOSTNAME"
+chown $USER:$GROUP "/var/lib/ceph/mon/$CLUSTER-$HOSTNAME"
+chmod 0755 "/var/lib/ceph/mon/$CLUSTER-$HOSTNAME"
 
-temp="$(mktemp /tmp/$CLUSTER.XXXX)"
+temp="$(mktemp "/tmp/$CLUSTER.XXXX")"
 
 counter=1
 array=()
 for i in "${CEPHNODES[@]}"; do 
-  array+=("--add $(get_property HOSTNAME $i) $i:6789")
+  array+=("--add $(get_property HOSTNAME "$i") $i:6789")
   (( counter++ ))
 done
 
-monmaptool --create $( echo "${array[*]}" ) --fsid $FSID --clobber $temp
+monmaptool --create "${array[*]}" --fsid "$FSID" --clobber "$temp"
 
-mv $temp /etc/ceph/monmap
+mv "$temp" /etc/ceph/monmap
 chown $USER:$GROUP /etc/ceph/monmap
 chmod 0640 /etc/ceph/monmap
 
 mkdir -p /var/lib/ceph/bootstrap-{osd,mds,rgw}
 
-sudo cp /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring /var/lib/ceph/bootstrap-osd/$CLUSTER.keyring
-chown $USER:$GROUP /var/lib/ceph/bootstrap-osd/$CLUSTER.keyring
-sudo cp /vagrant/ceph/bootstrap-mds.$CLUSTER.keyring /var/lib/ceph/bootstrap-mds/$CLUSTER.keyring 
-chown $USER:$GROUP /var/lib/ceph/bootstrap-mds/$CLUSTER.keyring 
-sudo cp /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring /var/lib/ceph/bootstrap-rgw/$CLUSTER.keyring
-chown $USER:$GROUP /var/lib/ceph/bootstrap-rgw/$CLUSTER.keyring
+sudo cp "/vagrant/ceph/bootstrap-osd.$CLUSTER.keyring" "/var/lib/ceph/bootstrap-osd/$CLUSTER.keyring"
+chown $USER:$GROUP "/var/lib/ceph/bootstrap-osd/$CLUSTER.keyring"
+sudo cp "/vagrant/ceph/bootstrap-mds.$CLUSTER.keyring" "/var/lib/ceph/bootstrap-mds/$CLUSTER.keyring"
+chown $USER:$GROUP "/var/lib/ceph/bootstrap-mds/$CLUSTER.keyring"
+sudo cp "/vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring" "/var/lib/ceph/bootstrap-rgw/$CLUSTER.keyring"
+chown $USER:$GROUP "/var/lib/ceph/bootstrap-rgw/$CLUSTER.keyring"
 
-ceph-mon --setuser $USER --setgroup $GROUP --mkfs -i $HOSTNAME --monmap /etc/ceph/monmap --keyring /vagrant/ceph/$CLUSTER.mon.keyring
+ceph-mon --setuser $USER --setgroup $GROUP --mkfs -i "$HOSTNAME" --monmap /etc/ceph/monmap --keyring "/vagrant/ceph/$CLUSTER.mon.keyring"
 
 
-touch /var/lib/ceph/mon/$CLUSTER-$HOSTNAME/done
+touch "/var/lib/ceph/mon/$CLUSTER-$HOSTNAME/done"
 
-touch /var/lib/ceph/mon/$CLUSTER-$HOSTNAME/upstart
+touch "/var/lib/ceph/mon/$CLUSTER-$HOSTNAME/upstart"
 
-stop ceph-mon cluster=$CLUSTER id=$HOSTNAME || true
-start ceph-mon cluster=$CLUSTER id=$HOSTNAME
+stop ceph-mon cluster="$CLUSTER" id="$HOSTNAME" || true
+start ceph-mon cluster="$CLUSTER" id="$HOSTNAME"
