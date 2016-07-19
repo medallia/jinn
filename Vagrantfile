@@ -31,8 +31,8 @@ netmask = IPAddr.new('255.255.255.255').mask(cidr[1]).to_s
 fd = dc['fault_domains']
 
 roles = jinn['roles']
-roles.each do |name, params|
-  roles[name]['servers'] = get_servers(name, params, fd)
+roles.each do |role_name, params|
+  roles[role_name]['servers'] = get_servers(role_name, params, fd)
   #venv.ui.info("#{name}: #{roles[name]['servers']}")
 end
 
