@@ -1,24 +1,30 @@
 require 'ipaddr'
 
-def validate(role_name, count, limit, fd_choice, ru, fault_domains)
-  if count == nil
+def check_count(role_name, c, fd)
+  if c.count == nil
     raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: Missing count"
-  end
-  if fd_choice != nil && (count > 1 && limit == 1)
-    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: fault domain specified with count(#{count}) >1 and limit = #{limit}"
-  end
-  if fd_choice != nil && fault_domains[fd_choice] == nil
-    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: #{fd_choice} is unknown"
-  end
-  if !ru.to_i.between?(1, 48)
-    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: unit(#{ru}) not between 1 and 48"
-  end
-  if ru != nil && (count.to_f / fault_domains.size) > 1
-    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: unit specified with count(#{count}) > nb fault domains(#{fd.size})"
   end
 end
 
-def get_server(fault_domains, fd_map, role_name, count, limit, fd_choice, ru)
+def check_fd(role_name, c, fd)
+  if c.fd_choice != nil && (c.count > 1 && c.limit == 1)
+    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: fault domain specified with count(#{c.count}) >1 and limit = #{c.limit}"
+  end
+  if c.fd_choice != nil && fd[c.fd_choice] == nil
+    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: #{c.fd_choice} is unknown"
+  end
+end
+
+def check_ru(role_name, c, fd)
+  if !c.ru.to_i.between?(1, 48)
+    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: unit(#{c.ru}) not between 1 and 48"
+  end
+  if c.ru != nil && (c.count.to_f / fd.size) > 1
+    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: unit specified with count(#{c.count}) > nb fault domains(#{fd.size})"
+  end
+end
+
+def get_server(fault_domains, fd_map, role_name, c)
   ip = nil
   fault_domains.each do |f|
 
@@ -28,19 +34,19 @@ def get_server(fault_domains, fd_map, role_name, count, limit, fd_choice, ru)
       fd_map[f['id']] = Array.new
     end
     # is there a fd choice
-    if fd_choice != nil && fd_choice != f['id']
+    if c.fd_choice != nil && c.fd_choice != f['id']
       next
     end
 
     # is the limit for that fd reached
-    if limit != nil && (fd_map[f['id']].size >= limit)
+    if c.limit != nil && (fd_map[f['id']].size >= c.limit)
       next
     end
 
     # if there is a ru choice
-    if ru != nil 
+    if c.ru != nil 
       # calculate IP based on RU based numbering
-      ip = subnet | (ru.to_i*4)+2
+      ip = subnet | (c.ru.to_i*4)+2
       if fd_map[f['id']].include?(ip.to_s)
         next
       end
@@ -64,20 +70,20 @@ def get_server(fault_domains, fd_map, role_name, count, limit, fd_choice, ru)
 end
 
 def get_servers(role_name, role, fault_domains)
-  constraints = role['constraints']
-  count = constraints['count']
-  limit = constraints['limit']
-  fd_choice = constraints['fd']
-  ru = constraints['unit']
+  role_constraints = role['constraints']
 
-  validate(role_name, count, limit, fd_choice, ru, fault_domains)
+  c = Constraints.new(role_constraints['count'], role_constraints['limit'], role_constraints['fd'], role_constraints['unit'] )
+
+  check_count(role_name, c, fault_domains)
+  check_fd(role_name, c, fault_domains)
+  check_ru(role_name, c, fault_domains)
 
   fd_map = Hash.new
   server_ips = Array.new
 
-  (1..count).each do |i|
+  (1..c.count).each do |i|
     # go over all the slots
-    ip = get_server(fault_domains, fd_map, role_name, count, limit, fd_choice, ru)
+    ip = get_server(fault_domains, fd_map, role_name, c)
     if ip != nil
       server_ips << ip.to_s
     end

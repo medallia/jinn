@@ -30,6 +30,8 @@ netmask = IPAddr.new('255.255.255.255').mask(cidr[1]).to_s
 
 fd = dc['fault_domains']
 
+Constraints = Struct.new(:count, :limit, :fd_choice, :ru)
+
 roles = jinn['roles']
 roles.each do |role_name, params|
   roles[role_name]['servers'] = get_servers(role_name, params, fd)
