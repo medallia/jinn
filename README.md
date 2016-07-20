@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/medallia/jinn.svg?branch=master)](https://travis-ci.org/medallia/jinn)
+[![Issue Count](https://codeclimate.com/github/medallia/jinn/badges/issue_count.svg)](https://codeclimate.com/github/medallia/jinn)
 #  Jinn: A datacenter experiementation and development environment
 
 ## Description
