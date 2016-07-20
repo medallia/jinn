@@ -24,9 +24,9 @@ if [[ -n ${MESOS_DEDICATED} ]]; then
   reservation=512
 fi
 # the following is not strictly necessary, however, mesos by default reserve 1024 for the OS - this is too much for a test environment
-cpus=$(bc <<< "scale=1; $(cat /proc/cpuinfo | grep processor | wc -l) - 0.1")
+cpus=$(bc <<< "scale=1; $(grep -c processor /proc/cpuinfo) - 0.1")
 echo "CPU: ${cpus}"
-mem=$(bc <<< "scale=0; total=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')/1024; if (total >= 2048) {total - $reservation} else {total/2}")
+mem=$(bc <<< "scale=0; total=$(grep MemTotal /proc/meminfo | awk '{print $2}')/1024; if (total >= 2048) {total - $reservation} else {total/2}")
 echo "MEM: ${mem}"
 disk=$(bc <<< "scale=0; avail=$(df --output=avail /var/lib/docker | sed '2q;d')/1024; if (avail >= 10*1024) {avail - 5*1024} else {avail/2}")
 echo "DISK: $disk"

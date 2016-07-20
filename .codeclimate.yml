@@ -5,8 +5,6 @@ engines:
     config:
       languages:
       - ruby
-      - javascript
-      - python
       - php
   fixme:
     enabled: true
@@ -14,6 +12,7 @@ engines:
     enabled: true
     exclude_fingerprints:
     - f38fa3d41f1f3609dd2ef2dcbedeba77
+    - 2df635fa2a72329ab36ea883a12159b7
   shellcheck:
     enabled: true
     checks:
@@ -21,11 +20,6 @@ engines:
         enabled: false
 ratings:
   paths:
-  - "**.inc"
-  - "**.js"
-  - "**.jsx"
-  - "**.module"
-  - "**.php"
-  - "**.py"
   - "**.rb"
+  - "**.sh"
 exclude_paths: []

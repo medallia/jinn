@@ -63,9 +63,9 @@ function get_property()
   IFS=. read -r m1 m2 m3 m4 <<< "${NET_MASK}"
   _DC_PREFIX=$(printf "%d.%d.%d.%d\n" "$((i1 & m1))" "$((i2 & m2))" "$((i3 & m3))" "$((i4 & m4))")
 
-  _DC=$(echo ${_DC_PREFIX} | cut -d. -f2)
-  _RACK=$(echo ${NET_IP} | cut -d. -f3)
-  _UNIT=$(( ($(echo ${NET_IP} | cut -d. -f4) - 2) / 4))
+  _DC=$(echo "${_DC_PREFIX}" | cut -d. -f2)
+  _RACK=$(echo "${NET_IP}" | cut -d. -f3)
+  _UNIT=$(( ($(echo "${NET_IP}" | cut -d. -f4) - 2) / 4))
 
   _HOSTNAME=$(printf '%s-r%02d-u%02d' "${DC_NAME}" "${_RACK}" "${_UNIT}")
 
@@ -76,7 +76,7 @@ function get_property()
     if [ "$ip" = "$NET_IP" ]; then
       _CONTROLLER_ID=$counter
     fi
-    zk_ip="192.168.255.$(($counter + 30))"
+    zk_ip="192.168.255.$(( counter + 30 ))"
     array+=("$zk_ip:2181")
     (( counter ++ ))
   done
@@ -98,7 +98,7 @@ function get_property()
     fi
     (( counter ++ ))
   done
-  (( _NBMONS = $counter - 1 ))
+  (( _NBMONS = counter - 1 ))
 
   if [[ $_NBMONS -lt 3 ]]; then
     _PGNUM=128
@@ -115,7 +115,7 @@ function get_property()
   property=_$_var
   if [[ ${!property+isset} = isset ]]; then
     # property is known, return value
-    echo ${!property}
+    echo "${!property}"
   else
     # property is not known
     return 1

@@ -5,19 +5,19 @@
 set -u
 
 pass(){
-  printf $(tput setaf 2)
+  tput setaf 2
   printf "${@}"
-  printf $(tput sgr0)
+  tput sgr0
 }
 fail(){
-  printf $(tput setaf 1)
+  tput setaf 1
   printf "${@}"
-  printf $(tput sgr0)
+  tput sgr0
 }
 title(){
-  printf $(tput bold)
+  tput bold
   printf "${@}"
-  printf $(tput sgr0)
+  tput sgr0
 }
 
 
@@ -38,7 +38,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 USER="$(cat "$DIR"/username)"
 
 title "Running VMs\n"
-read -r -a vms <<< $(VBoxManage list runningvms | grep -E "jinn_" | awk -v ORS=" " -F "[\"|\"]" '{print $2}')
+read -r -a vms <<< "$(VBoxManage list runningvms | grep -E "jinn_" | awk -v ORS=" " -F "[\"|\"]" '{print $2}')"
 
 if [ ${#vms[@]} -lt 1 ]; then
   fail "No runing VMs\n"
@@ -66,18 +66,18 @@ interface=$(VBoxManage showvminfo "$vm" --machinereadable | grep hostonlyadapter
 title "\nChecking local route to %s\n" "$ip"
 
 gtw=$(route get "$ip" | grep interface | awk -F':' '{gsub(/ /, "", $2);print $2}')
-if [[ $gtw != $interface ]]; then
+if [[ $gtw != "$interface" ]]; then
   fail "Wrong route to VMs: %s != %s \n" "$gtw" "$interface"
 else
-  pass "Found route %s \n" $gtw
+  pass "Found route %s \n" "$gtw"
 fi
 
 title "\n\nIP Hostnames \n"
 
 ips=()
-hosts=$(vssh ${vm}  'cat /etc/hosts | grep jinn')
+hosts=$(vssh "${vm}"  'cat /etc/hosts | grep jinn')
 while IFS= read -r line; do
-  echo $line
+  echo "$line"
   ips+=(${line%% *})
 done <<< "$hosts"
 
@@ -86,11 +86,14 @@ zkhosts=()
 mesos=()
 aurora=()
 
-routes=$(vssh ${vm}  'sudo vtysh -c "show ip route ospf"'  | grep "O>\*" | awk '{print $2}')
+routes=$(vssh "${vm}"  'sudo vtysh -c "show ip route ospf"'  | grep "O>\*" | awk '{print $2}')
 while IFS= read -r line; do
-  IFS='/' read ip suffix <<< "${line}"
+  IFS='/' read -r ip suffix <<< "${line}"
   IFS=. read -r i1 i2 i3 i4 <<< "$ip"
 
+  if [[ -z "$i1" ]] || [[ -z "$i2" ]]; then
+    exit 1
+  fi
   if [[ "$i3" -eq "255" ]]; then
     if [[ $ip == 192.168.255.* ]]; then
       zkhosts+=($ip)
@@ -104,12 +107,12 @@ while IFS= read -r line; do
       aurora+=($ip)
     fi
   fi
-  printf "%s/%s\n" $ip $suffix
+  printf "%s/%s\n" "$ip" "$suffix"
 done <<< "$routes"
 
 title "\n\nChecking Ceph \n"
 (
-  health=$(vssh ${vm} 'sudo timeout 5 ceph health')
+  health=$(vssh "${vm}" 'sudo timeout 5 ceph health')
   if [[ $health =~ "HEALTH_OK" || $health =~ "HEALTH_WARN" ]]; then
     pass "%s\n" "$health"
   else
@@ -119,7 +122,7 @@ title "\n\nChecking Ceph \n"
 
 title "\nChecking Monitors\n"
 (
-  vssh ${vm} 'sudo ceph mon stat' | tee
+  vssh "${vm}" 'sudo ceph mon stat' | tee
 )
 
 title "\nChecking Zookeeper \n"
@@ -129,12 +132,12 @@ title "\nChecking Zookeeper \n"
   for ip in "${zkhosts[@]-}"; do 
     # bash doesn't recognize empty arrays
     if [[ -n $ip ]]; then
-      mode=$(vssh ${vm} "echo stat | nc $ip 2181 | grep Mode")
+      mode=$(vssh "${vm}" "echo stat | nc $ip 2181 | grep Mode")
       mode=${mode##*: }
       if [[ "${mode}" == "standalone" || "${mode}" == "leader" ]]; then
         (( count ++ ))
       fi
-      printf "%s: %s\n" $ip ${mode}
+      printf "%s: %s\n" "$ip" "${mode}"
     fi
   done 
   if [ "$count" -lt "1" ]; then
@@ -152,13 +155,13 @@ title "\nChecking Mesos \n"
   for ip in "${mesos[@]-}"; do 
     # bash doesn't recognize empty arrays
     if [[ -n $ip ]]; then
-      mode=$(curl -s http://$ip:5050/metrics/snapshot | grep -oh "elected\"\:1.0")
+      mode=$(curl -s "http://$ip:5050/metrics/snapshot" | grep -oh "elected\"\:1.0")
       mode=${mode##*:}
       if [ -n "$mode" ] && [ "${mode%.*}" -gt "0" ]; then
-        printf "%s: %s\n" $ip Leader
+        printf "%s: %s\n" "$ip" "Leader"
         (( count ++ ))
       else
-        printf "%s: %s\n" $ip "Not Leader"
+        printf "%s: %s\n" "$ip" "Not Leader"
       fi
     fi
   done 
@@ -173,11 +176,11 @@ title "\nChecking Mesos \n"
 title "\nChecking Mesos Agents \n"
 
 for ip in "${ips[@]}"; do
-  out=$(curl -s http://$ip:5051/state | grep -o '\"attributes\":\"[a-z;:0-9."\-]*')
+  out=$(curl --max-time 10 -s "http://$ip:5051/state" | grep -o '\"attributes\":\"[a-z;:0-9."\-]*')
   if [[ -n "$out" ]]; then
-    printf "%s: %s\n" $ip $out
+    printf "%s: %s\n" "$ip" "$out"
   else
-    printf "%s: %s\n" $ip "No Agent"
+    printf "%s: %s\n" "$ip" "No Agent"
   fi
 done
 
@@ -188,13 +191,13 @@ title "\nChecking Aurora \n"
   for ip in "${aurora[@]-}"; do 
     # bash doesn't recognize empty arrays
     if [[ -n $ip ]]; then
-      mode=$(curl -s http://$ip:8081/vars | grep framework_registered)
+      mode=$(curl -s "http://$ip:8081/vars" | grep framework_registered)
     fi
     if [ -n "$mode" ] && [ "${mode#* }" -gt "0" ]; then
-      printf "%s: %s\n" $ip Leader
+      printf "%s: %s\n" "$ip" "Leader"
       (( count ++ ))
     else
-      printf "%s: %s\n" $ip "Not Leader"
+      printf "%s: %s\n" "$ip" "Not Leader"
     fi
   done 
   if [ "$count" -lt "1" ]; then
