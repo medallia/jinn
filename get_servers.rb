@@ -6,12 +6,9 @@ def check_count(role_name, c)
   end
 end
 
-def check_fd(role_name, c, fd)
+def check_fd(role_name, c)
   if c.fd_choice != nil && (c.count > 1 && c.limit == 1)
     raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: fault domain specified with count(#{c.count}) >1 and limit = #{c.limit}"
-  end
-  if c.fd_choice != nil && fd[c.fd_choice] == nil
-    raise Vagrant::Errors::VagrantError.new,"Incompatible constraints: #{role_name}: #{c.fd_choice} is unknown"
   end
 end
 
@@ -27,18 +24,21 @@ end
 def allocate_random(subnet, id, fd_map)
   ip = nil
   tries = 0
+  # 20 should be sufficient
+  max = 20
+
   begin
-    ip = subnet.to_range.to_a[1..-1].sample()
+    ip = subnet.to_range.to_a[0..-1].sample()
     tries = tries+1
-  end while (fd_map[id].include?(ip.to_s) || tries < 5)
-  if tries == 5 
+  end while (fd_map[id].include?(ip.to_s) && tries < max)
+  if tries == max
     return nil
   else
     return ip
   end
 end
 
-def get_server(fault_domains, fd_map, role_name, c)
+def get_server(fault_domains, fd_map, c)
   ip = nil
   fault_domains.each do |fd|
 
@@ -68,10 +68,9 @@ def get_server(fault_domains, fd_map, role_name, c)
     else
       ip = allocate_random(subnet, id, fd_map)
       if ip == nil
-        raise Vagrant::Errors::VagrantError.new,"Cannot allocate IP: #{role_name}: too many tries"
+        return nil
       end
     end
-
     if ip != nil
       fd_map[id] << ip.to_s
       break
@@ -86,7 +85,7 @@ def get_servers(role_name, role, fault_domains)
   c = Constraints.new(role_constraints['count'], role_constraints['limit'], role_constraints['fd'], role_constraints['unit'] )
 
   check_count(role_name, c)
-  check_fd(role_name, c, fault_domains)
+  check_fd(role_name, c)
   check_ru(role_name, c, fault_domains)
 
   fd_map = Hash.new
@@ -94,9 +93,11 @@ def get_servers(role_name, role, fault_domains)
 
   (1..c.count).each do |i|
     # go over all the slots
-    ip = get_server(fault_domains, fd_map, role_name, c)
+    ip = get_server(fault_domains, fd_map, c)
     if ip != nil
       server_ips << ip.to_s
+    else
+      raise Vagrant::Errors::VagrantError.new,"Cannot allocate IP: #{role_name}: too many tries"
     end
   end
   if server_ips.size == 0
