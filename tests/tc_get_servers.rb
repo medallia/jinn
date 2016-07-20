@@ -36,7 +36,7 @@ fault_domains:
 	def test_fd_incompatible
 		c = Constraints.new(2, 1, "rack10", "8" )
 		assert_raise(Vagrant::Errors::VagrantError) do
-			check_fd("test", c, @fd)
+			check_fd("test", c)
 		end
 	end
 
