@@ -14,9 +14,9 @@ if [[ -z "$ZK_HOSTS" || -z "$CONTROLLER_ID" || -z "$DC_NAME" || -z "$QUORUM" || 
 fi
 
 # TODO: Tune the size of the image created
-MESOS_PATH=$(create_image mesos-master-${CONTROLLER_ID})
+MESOS_PATH=$(create_image "mesos-master-${CONTROLLER_ID}")
 if [[ -n "$MESOS_PATH" ]]; then
-  unmount_image mesos-master-${CONTROLLER_ID}
+  unmount_image "mesos-master-${CONTROLLER_ID}"
 fi
 
 init_docker_conf "/etc/init/mesos-master-docker.conf" \

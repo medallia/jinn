@@ -16,27 +16,27 @@ fi
 
 
 # Ceph Repo
-add-repo ceph http://download.ceph.com/debian-${RELEASE}/ $(lsb_release -sc) main 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc'
+add-repo ceph http://download.ceph.com/debian-${RELEASE}/ "$(lsb_release -sc)" main 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc'
 
 # Ceph Package Install
 apt-get -y install ceph
 
 mkdir -p /vagrant/ceph
 
-if [ ! -e /vagrant/ceph/$CLUSTER.client.admin.keyring ]; then
-  ceph-authtool --create-keyring /vagrant/ceph/$CLUSTER.client.admin.keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
+if [ ! -e "/vagrant/ceph/$CLUSTER.client.admin.keyring" ]; then
+  ceph-authtool --create-keyring "/vagrant/ceph/$CLUSTER.client.admin.keyring" --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
 fi
 
-if [ ! -e /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring ]; then
-  ceph-authtool /vagrant/ceph/bootstrap-osd.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-osd --cap mon 'allow profile bootstrap-osd'
+if [ ! -e "/vagrant/ceph/bootstrap-osd.$CLUSTER.keyring" ]; then
+  ceph-authtool "/vagrant/ceph/bootstrap-osd.$CLUSTER.keyring" --create-keyring --gen-key -n client.bootstrap-osd --cap mon 'allow profile bootstrap-osd'
 fi
 
-if [ ! -e /vagrant/ceph/bootstrap-mds.$CLUSTER.keyring ]; then
-  ceph-authtool /vagrant/ceph/bootstrap-mds.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-mds --cap mon 'allow profile bootstrap-mds'
+if [ ! -e "/vagrant/ceph/bootstrap-mds.$CLUSTER.keyring" ]; then
+  ceph-authtool "/vagrant/ceph/bootstrap-mds.$CLUSTER.keyring" --create-keyring --gen-key -n client.bootstrap-mds --cap mon 'allow profile bootstrap-mds'
 fi
 
-if [ ! -e /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring ]; then
-  ceph-authtool /vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring --create-keyring --gen-key -n client.bootstrap-rgw --cap mon 'allow profile bootstrap-rgw'
+if [ ! -e "/vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring" ]; then
+  ceph-authtool "/vagrant/ceph/bootstrap-rgw.$CLUSTER.keyring" --create-keyring --gen-key -n client.bootstrap-rgw --cap mon 'allow profile bootstrap-rgw'
 fi
 
 
@@ -65,10 +65,10 @@ END
 #chmod 755 /usr/bin/remove-rbd-own-locks
 
 
-if [ -e /vagrant/ceph/$CLUSTER.client.admin.keyring ]; then
-  cp /vagrant/ceph/$CLUSTER.client.admin.keyring /etc/ceph/
-  chown $USER:$GROUP /etc/ceph/$CLUSTER.client.admin.keyring
-  chmod 0640 /etc/ceph/$CLUSTER.client.admin.keyring
+if [ -e "/vagrant/ceph/$CLUSTER.client.admin.keyring" ]; then
+  cp "/vagrant/ceph/$CLUSTER.client.admin.keyring" /etc/ceph/
+  chown "$USER":"$GROUP" "/etc/ceph/$CLUSTER.client.admin.keyring"
+  chmod 0640 "/etc/ceph/$CLUSTER.client.admin.keyring"
 else
   echo "CEPH not initialized. Cannot find admin keyring"
   exit 1

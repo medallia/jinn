@@ -9,12 +9,12 @@ set -x
 function set_pgnum(){
   local _PGNUM=$1
   
-  until timeout 5 ceph osd pool set rbd pg_num ${_PGNUM} || [ $? -ne 16 ]
+  until timeout 5 ceph osd pool set rbd pg_num "${_PGNUM}" || [ $? -ne 16 ]
   do
       echo "sleeping"
       sleep 1
   done
-  until timeout 5 ceph osd pool set rbd pgp_num ${_PGNUM} || [ $? -ne 16 ]
+  until timeout 5 ceph osd pool set rbd pgp_num "${_PGNUM}" || [ $? -ne 16 ]
   do
       echo "sleeping"
       sleep 1
@@ -51,11 +51,11 @@ function whitelisted_controller () {
 
     # This is kludge; essentially since there's a varying level of pci controllers/buses/bridges, essentially
     # resolve absolute path, pass to sed, pick out everything up to something that's xxxx:xx:xx.x (where x is in 0-9a-f)
-    pci_dev_path_stub=$(readlink -e /sys/block/${block_stub} | sed -r -e 's/^(.*\/[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-9a-f])\/.*$/\1/')
-    controller_vendor=$(cat ${pci_dev_path_stub}/vendor)
-    controller_device=$(cat ${pci_dev_path_stub}/device)
+    pci_dev_path_stub=$(readlink -e "/sys/block/${block_stub}" | sed -r -e 's/^(.*\/[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-9a-f])\/.*$/\1/')
+    controller_vendor=$(cat "${pci_dev_path_stub}/vendor")
+    controller_device=$(cat "${pci_dev_path_stub}/device")
     # Virtualbox specific vendor
-    if [ "${controller_vendor}" = "0x8086" -a "${controller_device}" = "0x2829" ]; then
+    if [ "${controller_vendor}" = "0x8086" ] && [ "${controller_device}" = "0x2829" ]; then
         return 0
     fi
     return 1
@@ -83,4 +83,4 @@ for sysblock in /sys/block/sd*; do
 done
 
 ## Add here temporarily.
-set_pgnum ${PGNUM} || true
+set_pgnum "${PGNUM}" || true
