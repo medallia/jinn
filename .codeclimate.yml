@@ -12,6 +12,8 @@ engines:
     enabled: true
   rubocop:
     enabled: true
+    exclude_fingerprints:
+    - f38fa3d41f1f3609dd2ef2dcbedeba77
   shellcheck:
     enabled: true
     checks:
