@@ -27,10 +27,11 @@ def allocate_random(subnet, id, fd_map)
   # 20 should be sufficient
   max = 20
 
-  begin
+  loop do
     ip = subnet.to_range.to_a[0..-1].sample()
     tries = tries+1
-  end while (fd_map[id].include?(ip.to_s) && tries < max)
+    break if (!fd_map[id].include?(ip.to_s) or tries > max)
+  end
   if tries == max
     return nil
   else
@@ -91,7 +92,7 @@ def get_servers(role_name, role, fault_domains)
   fd_map = Hash.new
   server_ips = Array.new
 
-  (1..c.count).each do |i|
+  (1..c.count).each do
     # go over all the slots
     ip = get_server(fault_domains, fd_map, c)
     if ip != nil

@@ -113,7 +113,7 @@ done <<< "$routes"
 title "\n\nChecking Ceph \n"
 (
   health=$(vssh "${vm}" 'sudo timeout 5 ceph health')
-  if [[ $health =~ "HEALTH_OK" || $health =~ "HEALTH_WARN" ]]; then
+  if [[ $health =~ HEALTH_OK || $health =~ HEALTH_WARN ]]; then
     pass "%s\n" "$health"
   else
     fail "%s\n" "$health"
