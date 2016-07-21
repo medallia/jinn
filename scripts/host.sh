@@ -27,7 +27,7 @@ function set_hosts() {
   declare -a _array=("${!1}")
 
   for i in "${_array[@]}"; do
-    n=$(get_property HOSTNAME $i)
+    n=$(get_property HOSTNAME "$i")
     sed -i "/$n/d" /etc/hosts
     echo "$i $n" >> /etc/hosts
   done
@@ -38,7 +38,7 @@ if [[ -z "$NET_IP" || -z "$HOSTNAME" || -z "$CTRLNODES" || -z "$CEPHNODES" || -z
   exit 1
 fi
 
-set_hostname $HOSTNAME $NET_IP
+set_hostname "$HOSTNAME" "$NET_IP"
 
 #create ZK hosts
 echo ">>> Add Controllers to /etc/hosts"

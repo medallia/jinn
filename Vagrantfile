@@ -19,8 +19,6 @@ load(File.join(vagrant_root,'get_servers.rb'))
 jinn = YAML.load_file(File.join(vagrant_root,'jinn.yml'))
 cache_dir = File.join(vagrant_root, 'cached-files')
 system("mkdir -p #{cache_dir}")
-# maybe there is a way to get Vagrant's environment ?
-venv = Vagrant::Environment.new(:ui_class => Vagrant::UI::Colored)
 
 dc = jinn['DC']
 cidr = dc['subnet'].split('/')

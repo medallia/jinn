@@ -12,11 +12,16 @@ engines:
     enabled: true
     exclude_fingerprints:
     - f38fa3d41f1f3609dd2ef2dcbedeba77
-    - 2df635fa2a72329ab36ea883a12159b7
   shellcheck:
     enabled: true
+    exclude_fingerprints:
+    - 5c5f30fe874c38a848faab95c5eb2d70
+    - e485089c6346adbb340a7689a14da36c
+    - 2df635fa2a72329ab36ea883a12159b7
     checks:
       SC2034:
+        enabled: false
+      SC1091:
         enabled: false
 ratings:
   paths:
