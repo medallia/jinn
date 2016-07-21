@@ -23,7 +23,6 @@ system("mkdir -p #{cache_dir}")
 dc = jinn['DC']
 cidr = dc['subnet'].split('/')
 
-subnet = cidr[0]
 netmask = IPAddr.new('255.255.255.255').mask(cidr[1]).to_s
 
 fd = dc['fault_domains']

@@ -18,6 +18,8 @@ engines:
     - 5c5f30fe874c38a848faab95c5eb2d70
     - e485089c6346adbb340a7689a14da36c
     - 2df635fa2a72329ab36ea883a12159b7
+    - 02c92c51426c9c5f6759e5b5d13c673c
+    - 8219d81394c8a80080e65c105791e239
     checks:
       SC2034:
         enabled: false
