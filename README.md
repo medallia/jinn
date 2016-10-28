@@ -1,13 +1,19 @@
 [![Build Status](https://travis-ci.org/medallia/jinn.svg?branch=master)](https://travis-ci.org/medallia/jinn)
 [![Issue Count](https://codeclimate.com/github/medallia/jinn/badges/issue_count.svg)](https://codeclimate.com/github/medallia/jinn)
-#  Jinn: A datacenter experiementation and development environment
+#  Jinn: A datacenter experimentation and development environment
 
 ## Description
+
+![Jinn Installation](https://img.youtube.com/vi/4H9fCGg8DIc/0.jpg)](https://www.youtube.com/watch?v=4H9fCGg8DIc)
+
+![Jinn Demo](https://img.youtube.com/vi/vdzyiqp-GDs/0.jpg)](https://www.youtube.com/watch?v=vdzyiqp-GDs)
+
 
 ## Dependencies
 - Vagrant (with Virtualbox)
 - vagrant_cashier (optional)
 - vagrant_reload
+
 
 ## Installation
 - install vagrant
@@ -126,4 +132,3 @@ vagrant up
 ```
 ___________________________________________________
 *Copyright 2016 Medallia Inc. All rights reserved*
-
