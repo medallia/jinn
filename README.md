@@ -4,10 +4,9 @@
 
 ## Description
 
-![Jinn Installation](https://img.youtube.com/vi/4H9fCGg8DIc/0.jpg)](https://www.youtube.com/watch?v=4H9fCGg8DIc)
+- [Watch a demo of Jinn in action here](https://www.youtube.com/watch?v=4H9fCGg8DIc)
 
-![Jinn Demo](https://img.youtube.com/vi/vdzyiqp-GDs/0.jpg)](https://www.youtube.com/watch?v=vdzyiqp-GDs)
-
+- [Watch a walkthrough installation of Jinn](https://www.youtube.com/watch?v=vdzyiqp-GDs)
 
 ## Dependencies
 - Vagrant (with Virtualbox)
